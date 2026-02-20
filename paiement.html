@@ -1,10 +1,9 @@
 <!DOCTYPE html>
-<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Paiement Sécurisé - YourPass</title>
+    <title>Paiement SÃ©curisÃ© - YourPass</title>
     <script src="https://unpkg.com/scrollreveal"></script>
     <link rel="stylesheet" href="css/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -25,7 +24,7 @@
 
         <ul class="nav-menu" id="navMenu">
             <li><a href="index.html" class="nav-link active">Accueil</a></li>
-            <li><a href="events.html" class="nav-link">Événements</a></li>
+            <li><a href="events.html" class="nav-link">Evenements</a></li>
             <li><a href="ads.html" class="nav-link">Partenaires</a></li>
             <li><a href="connexion.html" class="nav-link">Connexion</a></li>
             <li><a href="contact.html" class="nav-link">Contact</a></li>
@@ -34,7 +33,7 @@
 
         <div class="nav-actions">
             <button class="theme-toggle">
-                <span class="theme-icon">☀️</span>
+                <span class="theme-icon">â˜€ï¸</span>
             </button>
             <button class="menu-toggle">
                 <span></span>
@@ -50,11 +49,11 @@
         <div class="container">
             <div class="payment-breadcrumb">
                 <a href="index.html">Accueil</a>
-                <span>›</span>
+                <span>â€º</span>
                 <span>Paiement</span>
             </div>
-            <h1>Paiement Sécurisé</h1>
-            <p>Choisissez votre méthode de paiement préférée</p>
+            <h1>Paiement sécurisés</h1>
+            <p>Choisissez votre mÃ©thode de paiement prÃ©fÃ©rÃ©e</p>
         </div>
     </section>
 
@@ -64,7 +63,7 @@
             <div class="payment-layout">
                 <!-- Order Summary -->
                 <div class="order-summary">
-                    <h2>Récapitulatif de la commande</h2>
+                    <h2>RÃ©capitulatif de la commande</h2>
                     <div class="order-items">
                         <div class="order-item">
                             <div class="item-info">
@@ -88,7 +87,7 @@
                             <span id="fees">250 XOF</span>
                         </div>
                         <div class="total-row final">
-                            <span>Total à payer</span>
+                            <span>Total Ã  payer</span>
                             <span id="total">5 250 XOF</span>
                         </div>
                     </div>
@@ -96,31 +95,31 @@
 
                 <!-- Payment Methods -->
                 <div class="payment-methods">
-                    <h2>Méthodes de paiement</h2>
+                    <h2>MÃ©thodes de paiement</h2>
                     
                     <!-- Mobile Money Section -->
                     <div class="payment-section">
                         <button class="payment-header-btn" onclick="togglePaymentSection('momo')">
-                            <div class="payment-icon">📱</div>
+                            <div class="payment-icon">ðŸ“±</div>
                             <div class="payment-info">
                                 <h3>Mobile Money</h3>
                                 <p>MTN, Moov, Orange Money</p>
                             </div>
-                            <span class="toggle-icon">▼</span>
+                            <span class="toggle-icon">â–¼</span>
                         </button>
                         
                         <div id="momo-section" class="payment-content active">
                             <div class="payment-options">
                                 <button class="payment-option active" onclick="selectPaymentOption(this, 'mtn')">
-                                    <div class="option-logo">📱</div>
+                                    <div class="option-logo">ðŸ“±</div>
                                     <div class="option-info">
                                         <h4>MTN Mobile Money</h4>
-                                        <p>Instantané et sécurisé</p>
+                                        <p>InstantanÃ© et sÃ©curisÃ©</p>
                                     </div>
                                 </button>
                                 
                                 <button class="payment-option" onclick="selectPaymentOption(this, 'moov')">
-                                    <div class="option-logo">📱</div>
+                                    <div class="option-logo">ðŸ“±</div>
                                     <div class="option-info">
                                         <h4>Moov Money</h4>
                                         <p>Rapide et fiable</p>
@@ -132,11 +131,11 @@
                             
                             <div class="payment-form" id="momo-form">
                                 <div class="form-group">
-                                    <label>Numéro de téléphone</label>
+                                    <label>NumÃ©ro de tÃ©lÃ©phone</label>
                                     <input 
                                            type="tel" 
                                            id="phone"
-                                           placeholder="Numéro MTN (ex: 229XXXXXXXX)"
+                                           placeholder="NumÃ©ro MTN (ex: 229XXXXXXXX)"
                                            required
                                          />
 
@@ -163,36 +162,36 @@
                     <!-- Bank Cards Section -->
                     <div class="payment-section">
                         <button class="payment-header-btn" onclick="togglePaymentSection('cards')">
-                            <div class="payment-icon">💳</div>
+                            <div class="payment-icon">ðŸ’³</div>
                             <div class="payment-info">
                                 <h3>Cartes Bancaires</h3>
                                 <p>Visa, Mastercard, UBA</p>
                             </div>
-                            <span class="toggle-icon">▼</span>
+                            <span class="toggle-icon">â–¼</span>
                         </button>
                         
                         <div id="cards-section" class="payment-content">
                             <div class="payment-options">
                                 <button class="payment-option" onclick="selectPaymentOption(this, 'visa')">
-                                    <div class="option-logo">💳</div>
+                                    <div class="option-logo">ðŸ’³</div>
                                     <div class="option-info">
                                         <h4>Visa</h4>
-                                        <p>Accepté partout</p>
+                                        <p>AcceptÃ© partout</p>
                                     </div>
                                 </button>
                                 
                                 <button class="payment-option" onclick="selectPaymentOption(this, 'mastercard')">
-                                    <div class="option-logo">💳</div>
+                                    <div class="option-logo">ðŸ’³</div>
                                     <div class="option-info">
                                         <h4>Mastercard</h4>
-                                        <p>Sécurité maximale</p>
+                                        <p>SÃ©curitÃ© maximale</p>
                                     </div>
                                 </button>
                             </div>
                             
                             <div class="payment-form" id="cards-form" style="display: none;">
                                 <div class="form-group">
-                                    <label>Numéro de carte</label>
+                                    <label>NumÃ©ro de carte</label>
                                     <input type="text" placeholder="1234 5678 9012 3456" maxlength="19" required>
                                 </div>
                                 <div class="form-row">
@@ -219,18 +218,18 @@
                     <!-- Crypto Section -->
                     <div class="payment-section">
                         <button class="payment-header-btn" onclick="togglePaymentSection('crypto')">
-                            <div class="payment-icon">₿</div>
+                            <div class="payment-icon">â‚¿</div>
                             <div class="payment-info">
                                 <h3>Cryptomonnaies</h3>
                                 <p>Bitcoin, Ethereum, USDT</p>
                             </div>
-                            <span class="toggle-icon">▼</span>
+                            <span class="toggle-icon">â–¼</span>
                         </button>
                         
                         <div id="crypto-section" class="payment-content">
                             <div class="payment-options">
                                 <button class="payment-option" onclick="selectPaymentOption(this, 'bitcoin')">
-                                    <div class="option-logo">₿</div>
+                                    <div class="option-logo">â‚¿</div>
                                     <div class="option-info">
                                         <h4>Bitcoin</h4>
                                         <p>La crypto reine</p>
@@ -238,7 +237,7 @@
                                 </button>
                                 
                                 <button class="payment-option" onclick="selectPaymentOption(this, 'ethereum')">
-                                    <div class="option-logo">Ξ</div>
+                                    <div class="option-logo">Îž</div>
                                     <div class="option-info">
                                         <h4>Ethereum</h4>
                                         <p>Smart contracts</p>
@@ -246,7 +245,7 @@
                                 </button>
                                 
                                 <button class="payment-option" onclick="selectPaymentOption(this, 'usdt')">
-                                    <div class="option-logo">₮</div>
+                                    <div class="option-logo">â‚®</div>
                                     <div class="option-info">
                                         <h4>USDT</h4>
                                         <p>Stable coin</p>
@@ -260,7 +259,7 @@
                                     <input type="text" placeholder="0x..." readonly value="bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh">
                                 </div>
                                 <div class="form-group">
-                                    <label>Réseau</label>
+                                    <label>RÃ©seau</label>
                                     <select>
                                         <option>Bitcoin (BTC)</option>
                                         <option>Ethereum (ETH)</option>
@@ -274,7 +273,7 @@
                                 </div>
                                 <div class="crypto-qr">
                                     <div class="qr-code">
-                                        <div class="qr-placeholder">📱 QR Code</div>
+                                        <div class="qr-placeholder">ðŸ“± QR Code</div>
                                         <p>Scannez pour payer</p>
                                     </div>
                                 </div>
@@ -297,7 +296,7 @@
                     <div class="logo">
   <img src="image video/téléchargement (1).png" alt="YourPass Logo">
             </div><h4>YourPass</h4><br>
-                    <p>Votre plateforme de billetterie pour tous les événements au Bénin</p>
+                    <p>Votre plateforme de billetterie pour tous les Ã©vÃ©nements au BÃ©nin</p>
                     <div class="social-links">
                         <a href="#">
                             <svg  xmlns="http://www.w3.org/2000/svg" width="24" height="24"  
@@ -333,7 +332,7 @@ fill="currentColor" viewBox="0 0 24 24" >
                     <h4>Liens rapides</h4>
                     <ul>
                         <li><a href="index.html">Accueil</a></li>
-                        <li><a href="events.html">Tous les événements</a></li>
+                        <li><a href="events.html">Tous les Ã©vÃ©nements</a></li>
                         <li><a href="ads.html">Partenaires</a></li>
                         <li><a href="connexion.html">connexion</a></li>
                         <li><a href="contact.html">Contact</a></li>
@@ -344,12 +343,12 @@ fill="currentColor" viewBox="0 0 24 24" >
                     <ul>
                         <li><a href="#">FAQ</a></li>
                         <li><a href="#">Conditions d'utilisation</a></li>
-                        <li><a href="#">Politique de confidentialité</a></li>
+                        <li><a href="#">Politique de confidentialitÃ©</a></li>
                     </ul>
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2026 YourPass. Tous droits réservés.</p>
+                <p>&copy; 2026 YourPass. Tous droits rÃ©servÃ©s.</p>
             </div>
         </div>
     </footer>
@@ -358,14 +357,14 @@ fill="currentColor" viewBox="0 0 24 24" >
    
     <script>
         // Variables globales pour le paiement
-        let selectedPaymentOption = 'MTN'; // Par défaut
+        let selectedPaymentOption = 'MTN'; // Par dÃ©faut
         let eventData = JSON.parse(localStorage.getItem('selectedEvent')) || { price: 5000, name: 'WeLoveYa Festival' };
 
         document.addEventListener('DOMContentLoaded', () => {
             updateSummaryDisplay();
         });
 
-        // Gérer l'ouverture des sections (Momo, Cartes, Crypto)
+        // GÃ©rer l'ouverture des sections (Momo, Cartes, Crypto)
         function togglePaymentSection(sectionId) {
             document.querySelectorAll('.payment-content').forEach(content => {
                 content.classList.remove('active');
@@ -373,42 +372,46 @@ fill="currentColor" viewBox="0 0 24 24" >
             document.getElementById(sectionId + '-section').classList.add('active');
         }
 
-        // Gérer la sélection du réseau (MTN, Moov, etc.)
+        // GÃ©rer la sÃ©lection du rÃ©seau (MTN, Moov, etc.)
         function selectPaymentOption(element, option) {
             selectedPaymentOption = option.toUpperCase();
             // Retirer la classe active de tous les boutons de cette section
             element.parentElement.querySelectorAll('.payment-option').forEach(opt => {
                 opt.classList.remove('active');
             });
-            // Ajouter la classe au bouton cliqué
+            // Ajouter la classe au bouton cliquÃ©
             element.classList.add('active');
             
-            // Mettre à jour le placeholder du téléphone
+            // Mettre Ã  jour le placeholder du tÃ©lÃ©phone
             const phoneInput = document.getElementById("phone");
-            phoneInput.placeholder = `Numéro ${option.toUpperCase()} (ex: 229XXXXXXXX)`;
+            phoneInput.placeholder = `NumÃ©ro ${option.toUpperCase()} (ex: 229XXXXXXXX)`;
         }
 
         function calculateTotal() {
             const basePrice = parseInt(eventData.price) || 0;
-            const fees = 250; // Frais fixes comme dans votre HTML initial
-            return basePrice + fees;
+            const qty       = parseInt(eventData.quantity) || 1;
+            const fees      = Math.round(basePrice * qty * 0.05); // 5% de frais
+            return basePrice * qty + fees;
         }
 
         function updateSummaryDisplay() {
-            const total = calculateTotal();
             const basePrice = parseInt(eventData.price) || 0;
-            const fees = 250;
+            const qty       = parseInt(eventData.quantity) || 1;
+            const subtotal  = basePrice * qty;
+            const fees      = Math.round(subtotal * 0.05);
+            const total     = subtotal + fees;
 
-            document.getElementById('event-name').textContent = eventData.name;
-            document.getElementById('event-price').textContent = basePrice + " XOF";
-            document.getElementById('subtotal').textContent = basePrice + " XOF";
-            document.getElementById('fees').textContent = fees + " XOF";
-            document.getElementById('total').textContent = total + " XOF";
+            // Nom et infos de l'événement
+            if (eventData.name)  document.getElementById('event-name').textContent  = eventData.name;
+            if (eventData.date)  document.getElementById('event-date').textContent  =
+                new Date(eventData.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+
+            // Prix
+            document.getElementById('event-price').textContent = basePrice.toLocaleString('fr-FR') + ' XOF';
+            document.getElementById('subtotal').textContent    = subtotal.toLocaleString('fr-FR') + ' XOF';
+            document.getElementById('fees').textContent        = fees.toLocaleString('fr-FR') + ' XOF';
+            document.getElementById('total').textContent       = total.toLocaleString('fr-FR') + ' XOF';
         }
-
-        // Fonctions pour les autres modes (non implémentés dans le backend mais requis par le HTML)
-        function processCardPayment() { alert("Le paiement par carte sera disponible bientôt."); }
-        function processCryptoPayment() { alert("Le paiement par crypto sera disponible bientôt."); }
     </script>
 
     <style>

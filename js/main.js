@@ -1,27 +1,19 @@
 /* ================================================================
-   YourPass — main.js  ·  Version BOOST
-   Structure :
-     1. Utilitaires globaux (showNotification toast)
-     2. Thème dark/light (+ préférence système)
-     3. Navigation (mobile, indicateur glissant, active-link)
-     4. Scroll effects (navbar, scroll-up, sections actives)
-     5. Reveal on scroll (IntersectionObserver natif)
-     6. Vidéo d'accueil + countdown stylisé
-     7. Slider hero (swipe touch inclus)
-     8. Newsletter
-     9. Paiement FedaPay (goToPayment, processMomoPayment)
-    10. Page connexion/inscription
+   YourPass — main.js  v2.1 (CORRIGÉ)
+   
+   CORRECTION CRITIQUE :
+   processMomoPayment() stocke maintenant "yourpass_pending"
+   (transaction en attente) AVANT redirection FedaPay.
+   success.html appelle /verify/:id pour confirmer le paiement.
+   Le ticket "yourpass_ticket" n'est créé QUE si le paiement
+   est réellement approuvé par FedaPay.
 ================================================================ */
 
 'use strict';
 
 /* ────────────────────────────────────────────────────────────────
-   1. UTILITAIRES GLOBAUX
+   1. TOAST NOTIFICATIONS
 ──────────────────────────────────────────────────────────────── */
-
-/**
- * Affiche une notification toast en bas à droite.
- */
 function showNotification(message, type = 'info', duration = 3500) {
   let container = document.getElementById('toast-container');
   if (!container) {
@@ -60,7 +52,6 @@ function showNotification(message, type = 'info', duration = 3500) {
     toast.style.opacity   = '1';
     toast.style.transform = 'translateX(0)';
   });
-
   setTimeout(() => {
     toast.style.opacity   = '0';
     toast.style.transform = 'translateX(30px)';
@@ -100,40 +91,34 @@ function initNavigation() {
   const navLinks   = document.querySelectorAll('.nav-link');
   const indicator  = document.querySelector('.nav-indicator');
 
+  // Active link automatique basé sur la page courante
+  const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+  navLinks.forEach(link => {
+    const href = link.getAttribute('href');
+    link.classList.toggle('active',
+      href === currentPage || (currentPage === '' && href === 'index.html')
+    );
+  });
+
   // Menu mobile
   if (menuToggle && navMenu) {
     menuToggle.addEventListener('click', () => {
       const isOpen = navMenu.classList.toggle('active');
       menuToggle.classList.toggle('open', isOpen);
-      menuToggle.setAttribute('aria-expanded', String(isOpen));
     });
-
     document.addEventListener('click', (e) => {
       if (!navMenu.contains(e.target) && !menuToggle.contains(e.target)) {
         navMenu.classList.remove('active');
         menuToggle.classList.remove('open');
       }
     });
-
-    navLinks.forEach(link => {
-      link.addEventListener('click', () => {
-        navMenu.classList.remove('active');
-        menuToggle.classList.remove('open');
-      });
-    });
+    navLinks.forEach(link => link.addEventListener('click', () => {
+      navMenu.classList.remove('active');
+      menuToggle.classList.remove('open');
+    }));
   }
 
-  // Lien actif selon la page courante
-  const currentPage = window.location.pathname.split('/').pop() || 'index.html';
-  navLinks.forEach(link => {
-    const href = link.getAttribute('href');
-    link.classList.toggle(
-      'active',
-      href === currentPage || (currentPage === '' && href === 'index.html')
-    );
-  });
-
-  // Indicateur glissant (desktop)
+  // Indicateur glissant
   if (indicator && navMenu && navLinks.length > 0) {
     const moveIndicator = (link) => {
       const lr = link.getBoundingClientRect();
@@ -141,20 +126,22 @@ function initNavigation() {
       indicator.style.width     = lr.width + 'px';
       indicator.style.transform = `translateX(${lr.left - mr.left}px)`;
     };
-
     requestAnimationFrame(() => {
       const active = document.querySelector('.nav-link.active') || navLinks[0];
       if (active) moveIndicator(active);
     });
-
     navLinks.forEach(link => {
       link.addEventListener('click', () => {
         navLinks.forEach(l => l.classList.remove('active'));
         link.classList.add('active');
         moveIndicator(link);
       });
+      link.addEventListener('mouseenter', () => moveIndicator(link));
     });
-
+    navMenu.addEventListener('mouseleave', () => {
+      const active = document.querySelector('.nav-link.active');
+      if (active) moveIndicator(active);
+    });
     window.addEventListener('resize', () => {
       const current = document.querySelector('.nav-link.active');
       if (current) moveIndicator(current);
@@ -163,29 +150,16 @@ function initNavigation() {
 }
 
 /* ────────────────────────────────────────────────────────────────
-   4. EFFETS AU SCROLL
+   4. SCROLL EFFECTS
 ──────────────────────────────────────────────────────────────── */
 function initScrollEffects() {
   const navbar   = document.querySelector('.navbar');
-  const scrollUp = document.getElementById('scroll-up');
-  const sections = document.querySelectorAll('section[id]');
-
-  const onScroll = () => {
+  const scrollUp = document.querySelector('.scrollup');
+  window.addEventListener('scroll', () => {
     const y = window.scrollY;
-
     if (navbar)   navbar.classList.toggle('scrolled', y > 50);
     if (scrollUp) scrollUp.classList.toggle('show-scroll', y >= 350);
-
-    sections.forEach(section => {
-      const top  = section.offsetTop - 80;
-      const bot  = top + section.offsetHeight;
-      const id   = section.getAttribute('id');
-      const link = document.querySelector(`.nav-menu a[href*="${id}"]`);
-      if (link) link.classList.toggle('active-link', y >= top && y < bot);
-    });
-  };
-
-  window.addEventListener('scroll', onScroll, { passive: true });
+  }, { passive: true });
 }
 
 /* ────────────────────────────────────────────────────────────────
@@ -194,7 +168,6 @@ function initScrollEffects() {
 function initReveal() {
   const elements = document.querySelectorAll('.reveal');
   if (!elements.length) return;
-
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
@@ -202,41 +175,36 @@ function initReveal() {
         observer.unobserve(entry.target);
       }
     });
-  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
-
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
   elements.forEach(el => observer.observe(el));
 }
 
 /* ────────────────────────────────────────────────────────────────
-   6. VIDÉO D'ACCUEIL + COUNTDOWN
+   6. VIDÉO HERO + COUNTDOWN
 ──────────────────────────────────────────────────────────────── */
 function initHeroVideo() {
   const video     = document.getElementById('bg-video');
-  const toggleBtn = document.getElementById('toggleSound');
+  const toggleBtn = document.getElementById('toggleSound') || document.getElementById('sound-btn');
   const countdown = document.getElementById('countdown');
 
   if (video && toggleBtn) {
     toggleBtn.addEventListener('click', () => {
-      video.muted        = !video.muted;
+      video.muted = !video.muted;
       toggleBtn.textContent = video.muted ? '🔇' : '🔊';
     });
   }
 
   if (countdown) {
     const eventDate = new Date('2026-04-28T20:00:00').getTime();
-    const units     = [
+    const units = [
       { label: 'j', ms: 86400000 },
       { label: 'h', ms: 3600000  },
       { label: 'm', ms: 60000    },
       { label: 's', ms: 1000     }
     ];
-
     const update = () => {
       const diff = eventDate - Date.now();
-      if (diff <= 0) {
-        countdown.innerHTML = "<span>C'est l'heure ! 🎉</span>";
-        return;
-      }
+      if (diff <= 0) { countdown.innerHTML = "<span>C'est l'heure ! 🎉</span>"; return; }
       let remaining = diff;
       countdown.innerHTML = units.map(({ label, ms }) => {
         const val  = Math.floor(remaining / ms);
@@ -244,7 +212,6 @@ function initHeroVideo() {
         return `<span>${String(val).padStart(2, '0')}<small>${label}</small></span>`;
       }).join('');
     };
-
     update();
     setInterval(update, 1000);
   }
@@ -268,16 +235,13 @@ function initSlider() {
     slides[current].classList.add('active');
     if (dots[current]) dots[current].classList.add('active');
   };
-
   const start = () => { timer = setInterval(() => goTo(current + 1), 5000); };
   const reset = () => { clearInterval(timer); start(); };
-
   start();
 
   window.changeSlide  = (dir) => { goTo(current + dir); reset(); };
   window.currentSlide = (n)   => { goTo(n - 1); reset(); };
 
-  // Touch swipe
   const slider = document.querySelector('.hero-slider');
   if (slider) {
     let startX = 0;
@@ -304,12 +268,38 @@ function initNewsletter() {
 
 /* ────────────────────────────────────────────────────────────────
    9. PAIEMENT
+   
+   FLUX SÉCURISÉ :
+   
+   ① goToPayment()
+      → sauvegarde selectedEvent → redirige paiement.html
+      
+   ② processMomoPayment()  [CORRIGÉ]
+      → appelle POST /pay-fedapay
+      → reçoit { url, transaction_id }
+      → stocke "yourpass_pending" (PENDING, pas encore approuvé)
+      → redirige vers l'URL FedaPay
+      
+   ③ success.html
+      → lit "yourpass_pending"
+      → appelle GET /verify/:id → vérifie le vrai statut
+      → si "approved" → crée "yourpass_ticket" et affiche le ticket
+      → sinon → affiche une erreur claire
 ──────────────────────────────────────────────────────────────── */
 
 window.goToPayment = (id, name, price, ticketType, quantity = 1) => {
   try {
+    const event = window.getEventById ? window.getEventById(id) : null;
     localStorage.setItem('selectedEvent', JSON.stringify({
-      id, name, price, ticketType, quantity,
+      id, name,
+      price:     price || (event ? event.price : 0),
+      vipPrice:  event ? event.vipPrice : 0,
+      ticketType: ticketType || 'standard',
+      quantity,
+      date:      event ? event.date : new Date().toISOString(),
+      venue:     event ? event.venue : '',
+      location:  event ? event.location : '',
+      time:      event ? event.time : '',
       selectedAt: new Date().toISOString()
     }));
     window.location.href = 'paiement.html';
@@ -318,30 +308,42 @@ window.goToPayment = (id, name, price, ticketType, quantity = 1) => {
   }
 };
 
+/* ─── processMomoPayment — CORRIGÉ ──────────────────────────── */
 window.processMomoPayment = async () => {
   const phoneInput = document.getElementById('phone');
   const nameInput  = document.querySelector('#momo-form input[type="text"]');
   const emailInput = document.querySelector('#momo-form input[type="email"]');
   const payBtn     = document.querySelector('#momo-form .btn-primary');
 
-  const phone = phoneInput?.value.trim() || '';
+  // Validation
+  const phone = (phoneInput?.value || '').trim();
   if (phone.replace(/\D/g, '').length < 8) {
-    showNotification('Numéro de téléphone invalide.', 'error');
+    showNotification('Numéro de téléphone invalide (minimum 8 chiffres).', 'error');
     phoneInput?.focus();
     return;
   }
 
+  // Données de l'événement
   const eventData = (() => {
     try { return JSON.parse(localStorage.getItem('selectedEvent') || '{}'); }
     catch { return {}; }
   })();
 
-  // calculateTotal peut être définie dans la page paiement.html
-  const amount    = (typeof calculateTotal === 'function') ? calculateTotal() : ((eventData.price || 5000) + 250);
-  const eventName = document.getElementById('event-name')?.textContent || eventData.name || 'Événement YourPass';
-  const parts     = (nameInput?.value || '').trim().split(' ');
+  // Calcul du total (5% de frais, cohérent avec paiement.html)
+  const amount    = (typeof calculateTotal === 'function')
+    ? calculateTotal()
+    : ((eventData.price || 5000) + 250);
 
-  if (payBtn) { payBtn.disabled = true; payBtn.textContent = '⏳ Traitement…'; }
+  const eventName = document.getElementById('event-name')?.textContent?.trim()
+                 || eventData.name
+                 || 'Événement YourPass';
+  const parts = (nameInput?.value || '').trim().split(' ');
+
+  // UI loading
+  if (payBtn) {
+    payBtn.disabled = true;
+    payBtn.innerHTML = '⏳ Traitement…';
+  }
   showNotification('Initialisation du paiement…', 'info', 8000);
 
   try {
@@ -351,34 +353,52 @@ window.processMomoPayment = async () => {
       body: JSON.stringify({
         amount,
         phoneNumber: phone,
-        firstname: parts[0] || 'Client',
-        lastname:  parts.slice(1).join(' ') || 'YourPass',
-        email:     emailInput?.value.trim() || '',
+        firstname:   parts[0] || 'Client',
+        lastname:    parts.slice(1).join(' ') || 'YourPass',
+        email:       (emailInput?.value || '').trim() || undefined,
         eventName
       })
     });
 
-    if (!res.ok) throw new Error(`Erreur serveur HTTP ${res.status}`);
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.error || errData.errors?.join(', ') || `Erreur serveur HTTP ${res.status}`);
+    }
+
     const result = await res.json();
 
-    if (result.success && result.url) {
-      localStorage.setItem('yourpass_ticket', JSON.stringify({
-        eventName, totalAmount: amount,
-        orderId: result.transaction_id,
-        date: new Date().toLocaleString('fr-FR')
-      }));
-      showNotification('Redirection vers FedaPay…', 'success', 2000);
-      setTimeout(() => { window.location.href = result.url; }, 800);
-    } else {
-      throw new Error(result.error || 'Réponse invalide du serveur');
+    if (!result.success || !result.url) {
+      throw new Error(result.error || result.errors?.join(', ') || 'Réponse invalide du serveur');
     }
+
+    /* ─────────────────────────────────────────────────────────────
+       ✅ CORRECTION CRITIQUE
+       On stocke la transaction PENDING (pas un ticket confirmé).
+       success.html appellera /verify/:id pour vérifier l'approbation.
+       Le ticket ne sera créé que si FedaPay confirme le paiement.
+    ───────────────────────────────────────────────────────────── */
+    localStorage.setItem('yourpass_pending', JSON.stringify({
+      transaction_id: result.transaction_id,
+      eventName,
+      ticketType:  eventData.ticketType === 'vip' ? 'VIP' : 'Standard',
+      totalAmount: amount,
+      createdAt:   new Date().toISOString()
+    }));
+
+    showNotification('Redirection vers FedaPay…', 'success', 2000);
+    setTimeout(() => { window.location.href = result.url; }, 600);
+
   } catch (err) {
     console.error('[YourPass] Paiement:', err);
-    const msg = err.message.includes('fetch')
-      ? 'Serveur introuvable. Lancez "node server.js".'
-      : `Erreur : ${err.message}`;
-    showNotification(msg, 'error', 6000);
-    if (payBtn) { payBtn.disabled = false; payBtn.textContent = 'Payer avec Mobile Money'; }
+    let msg = err.message;
+    if (msg.includes('fetch') || msg.includes('Failed') || msg.includes('NetworkError')) {
+      msg = '🔴 Serveur introuvable. Vérifiez que "node server.js" est lancé.';
+    }
+    showNotification(msg, 'error', 7000);
+    if (payBtn) {
+      payBtn.disabled  = false;
+      payBtn.innerHTML = 'Payer avec Mobile Money';
+    }
   }
 };
 
@@ -393,16 +413,16 @@ window.togglePaymentSection = (sectionId) => {
 };
 
 window.selectPaymentOption = (element, option) => {
-  element.closest('.payment-options')
-         ?.querySelectorAll('.payment-option')
-         .forEach(opt => opt.classList.remove('active'));
+  element.parentElement
+    ?.querySelectorAll('.payment-option')
+    .forEach(opt => opt.classList.remove('active'));
   element.classList.add('active');
   const pi = document.getElementById('phone');
   if (pi) pi.placeholder = `Numéro ${option.toUpperCase()} (ex: 229XXXXXXXX)`;
 };
 
 /* ────────────────────────────────────────────────────────────────
-   10. PAGE CONNEXION / INSCRIPTION
+   10. CONNEXION
 ──────────────────────────────────────────────────────────────── */
 function initConnexion() {
   const loginBtn     = document.getElementById('loginBtn');
@@ -431,7 +451,7 @@ function initConnexion() {
 }
 
 /* ────────────────────────────────────────────────────────────────
-   INIT
+   INIT GÉNÉRAL
 ──────────────────────────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', () => {
   initTheme();
@@ -443,27 +463,18 @@ document.addEventListener('DOMContentLoaded', () => {
   initNewsletter();
   initConnexion();
 
-  // ScrollReveal CDN (optionnel)
   if (typeof ScrollReveal !== 'undefined') {
-    const sr = ScrollReveal({ origin: 'bottom', distance: '50px', duration: 800, delay: 100, reset: false });
-
+    const sr = ScrollReveal({ origin: 'bottom', distance: '40px', duration: 700, delay: 80, reset: false });
+    sr.reveal('.event-card',     { interval: 100, scale: 0.96 });
+    sr.reveal('.partner-card',   { interval: 80,  scale: 0.90 });
+    sr.reveal('.benefit-card',   { interval: 100 });
+    sr.reveal('.contact-method', { interval: 120, origin: 'left' });
     sr.reveal('.page-header h1, .page-header p', { interval: 80, origin: 'top' });
     sr.reveal('.footer-section', { interval: 100 });
-    sr.reveal('.hero-slider, .search-container', { origin: 'top' });
-    sr.reveal('.event-card', { interval: 100, scale: 0.95 });
-    sr.reveal('.newsletter-content', {});
-    sr.reveal('.event-banner, .event-info-main', { origin: 'left' });
-    sr.reveal('.ticket-selection, .venue-map', { origin: 'right', delay: 300 });
-    sr.reveal('.contact-method', { interval: 120, origin: 'left' });
-    sr.reveal('.contact-form-wrapper, .faq-section', { delay: 200 });
-    sr.reveal('.progress-section', { origin: 'top' });
-    sr.reveal('.order-summary, .payment-methods', { interval: 150 });
-    sr.reveal('.partner-card', { interval: 80, scale: 0.88 });
-    sr.reveal('.benefit-card', { interval: 100 });
+    sr.reveal('.ticket-card',    { interval: 100 });
   }
 });
 
-// Fallback menu mobile (si utilisé via onclick dans HTML)
 window.myMenuFunction = () => {
   document.getElementById('navMenu')?.classList.toggle('responsive');
 };
