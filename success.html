@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Paiement réussi | YourPass</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary: #2d6cff;
+      --success: #2ecc71;
+      --bg: #f5f7fa;
+    }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: var(--bg);
+      font-family: 'Inter', sans-serif;
+    }
+
+    /* Style du Ticket */
+    .ticket-container {
+      background: #fff;
+      border-radius: 20px;
+      padding: 30px;
+      width: 90%;
+      max-width: 380px;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+      margin-bottom: 25px;
+      position: relative;
+      border: 1px solid #eee;
+    }
+
+    .ticket-header { text-align: center; border-bottom: 2px dashed #eee; padding-bottom: 20px; margin-bottom: 20px; }
+    .ticket-header h1 { color: var(--primary); margin: 0; font-size: 28px; letter-spacing: -1px; }
+    .status { color: var(--success); font-weight: bold; font-size: 13px; margin-top: 5px; }
+
+    .row { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 14px; }
+    .label { color: #888; }
+    .value { font-weight: 700; color: #222; text-align: right; }
+
+    /* Zone QR Code */
+    .qr-zone {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 25px;
+      padding-top: 20px;
+      border-top: 2px dashed #eee;
+    }
+    #qrcode { width: 150px; height: 150px; margin-bottom: 10px; }
+    .order-id { font-size: 11px; color: #aaa; font-family: monospace; }
+
+    /* Boutons */
+    .actions { display: flex; gap: 12px; }
+    .btn {
+      padding: 14px 24px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      font-weight: 700;
+      transition: 0.3s;
+      text-decoration: none;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-pdf { background: var(--primary); color: white; }
+    .btn-pdf:hover { background: #1a56db; transform: translateY(-2px); }
+    .btn-home { background: #fff; color: #333; border: 1px solid #ddd; }
+    .btn-home:hover { background: #f9f9f9; }
+
+    @media print { .actions { display: none; } }
+  </style>
+</head>
+<body>
+
+  <div class="ticket-container" id="ticket-content">
+    <div class="ticket-header">
+      <h1>YourPass</h1>
+      <div class="status">● TICKET VALIDE</div>
+    </div>
+
+    <div class="row">
+      <span class="label">Événement</span>
+      <span class="value" id="eventName">Chargement...</span>
+    </div>
+
+    <div class="row">
+      <span class="label">Catégorie</span>
+      <span class="value">Standard</span>
+    </div>
+
+    <div class="row">
+      <span class="label">Prix total</span>
+      <span class="value" id="amount">0 XOF</span>
+    </div>
+
+    <div class="row">
+      <span class="label">Date d'achat</span>
+      <span class="value" id="date">-</span>
+    </div>
+
+    <div class="qr-zone">
+      <img id="qrcode" src="" alt="QR Code Ticket">
+      <span class="order-id" id="orderNumber">ID: --------</span>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-pdf" onclick="downloadPDF()">
+      📥 Télécharger PDF
+    </button>
+    <a href="index.html" class="btn btn-home">Retour</a>
+  </div>
+
+  <script>
+    // 1. Récupération des données du paiement stockées par main.js
+    const ticket = JSON.parse(localStorage.getItem("yourpass_ticket"));
+
+    if (!ticket) {
+      alert("Aucune donnée de ticket trouvée.");
+      window.location.href = "index.html";
+    } else {
+      // Remplissage des champs 
+      document.getElementById("eventName").innerText = ticket.eventName;
+      document.getElementById("amount").innerText = ticket.totalAmount + " XOF";
+      document.getElementById("date").innerText = ticket.date;
+      document.getElementById("orderNumber").innerText = "ID: " + ticket.orderId;
+
+      // 2. Génération du QR Code
+      // On encode l'ID de transaction dans le QR Code
+      const qrData = encodeURIComponent("YourPass-Ticket:" + ticket.orderId);
+      const qrUrl = `https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl=${qrData}&choe=UTF-8`;
+      document.getElementById("qrcode").src = qrUrl;
+    }
+
+    // 3. Fonction pour télécharger en PDF
+    function downloadPDF() {
+      const element = document.getElementById('ticket-content');
+      const opt = {
+        margin: 0.5,
+        filename: `YourPass_Ticket_${ticket.orderId}.pdf`,
+        image: { type: 'jpeg', quality: 1 },
+        html2canvas: { scale: 3, useCORS: true },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+      };
+      
+      html2pdf().set(opt).from(element).save();
+    }
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paiement Sécurisé - YourPass</title>
+    <script src="https://unpkg.com/scrollreveal"></script>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="manifest" href="meta.json">
+
+</head>
+
+
+<body>
+   <!-- Navigation -->
+    <nav class="navbar">
+    <div class="nav-container">
+        <div class="logo">
+            <img src="image video/téléchargement (1).png" alt="YourPass Logo">
+        </div>
+
+        <ul class="nav-menu" id="navMenu">
+            <li><a href="index.html" class="nav-link active">Accueil</a></li>
+            <li><a href="events.html" class="nav-link">Événements</a></li>
+            <li><a href="ads.html" class="nav-link">Partenaires</a></li>
+            <li><a href="connexion.html" class="nav-link">Connexion</a></li>
+            <li><a href="contact.html" class="nav-link">Contact</a></li>
+            <div class="nav-indicator"></div>
+        </ul>
+
+        <div class="nav-actions">
+            <button class="theme-toggle">
+                <span class="theme-icon">☀️</span>
+            </button>
+            <button class="menu-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </div>
+</nav>
+
+    <!-- Payment Header -->
+    <section class="payment-header">
+        <div class="container">
+            <div class="payment-breadcrumb">
+                <a href="index.html">Accueil</a>
+                <span>›</span>
+                <span>Paiement</span>
+            </div>
+            <h1>Paiement Sécurisé</h1>
+            <p>Choisissez votre méthode de paiement préférée</p>
+        </div>
+    </section>
+
+    <!-- Main Payment Content -->
+    <main class="payment-main">
+        <div class="container">
+            <div class="payment-layout">
+                <!-- Order Summary -->
+                <div class="order-summary">
+                    <h2>Récapitulatif de la commande</h2>
+                    <div class="order-items">
+                        <div class="order-item">
+                            <div class="item-info">
+                                <h3 id="event-name">WeLoveYa Festival</h3>
+                                <p>1 billet Standard</p>
+                                <p id="event-date">15 Mars 2024</p>
+                            </div>
+                            <div class="item-price">
+                                <strong id="event-price">5 000 XOF</strong>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="order-totals">
+                        <div class="total-row">
+                            <span>Sous-total</span>
+                            <span id="subtotal">5 000 XOF</span>
+                        </div>
+                        <div class="total-row">
+                            <span>Frais de service</span>
+                            <span id="fees">250 XOF</span>
+                        </div>
+                        <div class="total-row final">
+                            <span>Total à payer</span>
+                            <span id="total">5 250 XOF</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Methods -->
+                <div class="payment-methods">
+                    <h2>Méthodes de paiement</h2>
+                    
+                    <!-- Mobile Money Section -->
+                    <div class="payment-section">
+                        <button class="payment-header-btn" onclick="togglePaymentSection('momo')">
+                            <div class="payment-icon">📱</div>
+                            <div class="payment-info">
+                                <h3>Mobile Money</h3>
+                                <p>MTN, Moov, Orange Money</p>
+                            </div>
+                            <span class="toggle-icon">▼</span>
+                        </button>
+                        
+                        <div id="momo-section" class="payment-content active">
+                            <div class="payment-options">
+                                <button class="payment-option active" onclick="selectPaymentOption(this, 'mtn')">
+                                    <div class="option-logo">📱</div>
+                                    <div class="option-info">
+                                        <h4>MTN Mobile Money</h4>
+                                        <p>Instantané et sécurisé</p>
+                                    </div>
+                                </button>
+                                
+                                <button class="payment-option" onclick="selectPaymentOption(this, 'moov')">
+                                    <div class="option-logo">📱</div>
+                                    <div class="option-info">
+                                        <h4>Moov Money</h4>
+                                        <p>Rapide et fiable</p>
+                                    </div>
+                                </button>
+                                
+                                
+                            </div>
+                            
+                            <div class="payment-form" id="momo-form">
+                                <div class="form-group">
+                                    <label>Numéro de téléphone</label>
+                                    <input 
+                                           type="tel" 
+                                           id="phone"
+                                           placeholder="Numéro MTN (ex: 229XXXXXXXX)"
+                                           required
+                                         />
+
+                                </div>
+                                <div class="form-group">
+                                    <label>Nom du titulaire</label>
+                                    <input type="text" placeholder="Nom complet" required>
+                                </div>
+
+                                <div class="form-group" >
+                                    <label >E-mail</label>
+                                     <input type="email" placeholder="Votre email" required>
+                                </div>
+                   
+                   
+                
+                                <button class="btn-primary" onclick="processMomoPayment()">
+                                    Payer avec Mobile Money
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bank Cards Section -->
+                    <div class="payment-section">
+                        <button class="payment-header-btn" onclick="togglePaymentSection('cards')">
+                            <div class="payment-icon">💳</div>
+                            <div class="payment-info">
+                                <h3>Cartes Bancaires</h3>
+                                <p>Visa, Mastercard, UBA</p>
+                            </div>
+                            <span class="toggle-icon">▼</span>
+                        </button>
+                        
+                        <div id="cards-section" class="payment-content">
+                            <div class="payment-options">
+                                <button class="payment-option" onclick="selectPaymentOption(this, 'visa')">
+                                    <div class="option-logo">💳</div>
+                                    <div class="option-info">
+                                        <h4>Visa</h4>
+                                        <p>Accepté partout</p>
+                                    </div>
+                                </button>
+                                
+                                <button class="payment-option" onclick="selectPaymentOption(this, 'mastercard')">
+                                    <div class="option-logo">💳</div>
+                                    <div class="option-info">
+                                        <h4>Mastercard</h4>
+                                        <p>Sécurité maximale</p>
+                                    </div>
+                                </button>
+                            </div>
+                            
+                            <div class="payment-form" id="cards-form" style="display: none;">
+                                <div class="form-group">
+                                    <label>Numéro de carte</label>
+                                    <input type="text" placeholder="1234 5678 9012 3456" maxlength="19" required>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Date d'expiration</label>
+                                        <input type="text" placeholder="MM/AA" maxlength="5" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>CVV</label>
+                                        <input type="text" placeholder="123" maxlength="3" required>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Nom du titulaire</label>
+                                    <input type="text" placeholder="NOM COMPLET" required>
+                                </div>
+                                <button id="payBtn" class="btn-primary" onclick="processCardPayment()">
+                                    Payer avec Carte
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Crypto Section -->
+                    <div class="payment-section">
+                        <button class="payment-header-btn" onclick="togglePaymentSection('crypto')">
+                            <div class="payment-icon">₿</div>
+                            <div class="payment-info">
+                                <h3>Cryptomonnaies</h3>
+                                <p>Bitcoin, Ethereum, USDT</p>
+                            </div>
+                            <span class="toggle-icon">▼</span>
+                        </button>
+                        
+                        <div id="crypto-section" class="payment-content">
+                            <div class="payment-options">
+                                <button class="payment-option" onclick="selectPaymentOption(this, 'bitcoin')">
+                                    <div class="option-logo">₿</div>
+                                    <div class="option-info">
+                                        <h4>Bitcoin</h4>
+                                        <p>La crypto reine</p>
+                                    </div>
+                                </button>
+                                
+                                <button class="payment-option" onclick="selectPaymentOption(this, 'ethereum')">
+                                    <div class="option-logo">Ξ</div>
+                                    <div class="option-info">
+                                        <h4>Ethereum</h4>
+                                        <p>Smart contracts</p>
+                                    </div>
+                                </button>
+                                
+                                <button class="payment-option" onclick="selectPaymentOption(this, 'usdt')">
+                                    <div class="option-logo">₮</div>
+                                    <div class="option-info">
+                                        <h4>USDT</h4>
+                                        <p>Stable coin</p>
+                                    </div>
+                                </button>
+                            </div>
+                            
+                            <div class="payment-form" id="crypto-form" style="display: none;">
+                                <div class="form-group">
+                                    <label>Adresse de destination</label>
+                                    <input type="text" placeholder="0x..." readonly value="bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh">
+                                </div>
+                                <div class="form-group">
+                                    <label>Réseau</label>
+                                    <select>
+                                        <option>Bitcoin (BTC)</option>
+                                        <option>Ethereum (ETH)</option>
+                                        <option>Tron (TRC20)</option>
+                                        <option>Binance Smart Chain (BSC)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Montant en crypto</label>
+                                    <input type="text" placeholder="0.0001 BTC" readonly>
+                                </div>
+                                <div class="crypto-qr">
+                                    <div class="qr-code">
+                                        <div class="qr-placeholder">📱 QR Code</div>
+                                        <p>Scannez pour payer</p>
+                                    </div>
+                                </div>
+                                <button id="payBtn" class="btn-primary" onclick="processCryptoPayment()">
+                                    Payer avec Crypto
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="logo">
+  <img src="image video/téléchargement (1).png" alt="YourPass Logo">
+            </div><h4>YourPass</h4><br>
+                    <p>Votre plateforme de billetterie pour tous les événements au Bénin</p>
+                    <div class="social-links">
+                        <a href="#">
+                            <svg  xmlns="http://www.w3.org/2000/svg" width="24" height="24"  
+fill="currentColor" viewBox="0 0 24 24" >
+<!--Boxicons v3.0.8 https://boxicons.com | License  https://docs.boxicons.com/free-->
+<path d="M13.68 10.62 20.24 3h-1.55L13 9.62 8.45 3H3.19l6.88 10.01L3.19 21h1.55l6.01-6.99 4.8 6.99h5.24l-7.13-10.38Zm-2.13 2.47-.7-1-5.54-7.93H7.7l4.47 6.4.7 1 5.82 8.32H16.3z"></path>
+</svg>
+                        </a>
+                        <a href="#">
+                          <svg  xmlns="http://www.w3.org/2000/svg" width="16" height="16"  
+fill="currentColor" viewBox="0 0 24 24" >
+<!--Boxicons v3.0.8 https://boxicons.com | License  https://docs.boxicons.com/free-->
+<path d="M12 2.06c-5.5 0-10 4.5-10 10 0 4.94 3.61 9.06 8.33 9.89l.06-.05h-.06v-7.06h-2.5v-2.78h2.5V9.84c0-2.5 1.61-3.89 3.89-3.89.72 0 1.5.11 2.22.22v2.56h-1.28c-1.22 0-1.5.61-1.5 1.39v1.94h2.67l-.44 2.78h-2.22v7.06h-.06l.06.05c4.72-.83 8.33-4.94 8.33-9.89 0-5.5-4.5-10-10-10"></path>
+</svg>
+                        </a>
+                        <a href="#">
+                            <svg  xmlns="http://www.w3.org/2000/svg" width="16" height="16"  
+fill="currentColor" viewBox="0 0 24 24" >
+<!--Boxicons v3.0.8 https://boxicons.com | License  https://docs.boxicons.com/free-->
+<path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 3 3 0 0 1 .88.13V9.4a7 7 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a5 5 0 0 1-1-.1z"></path>
+</svg>
+                        </a>
+                        <a href="#">
+                            <svg  xmlns="http://www.w3.org/2000/svg" width="16" height="16"  
+fill="currentColor" viewBox="0 0 24 24" >
+<!--Boxicons v3.0.8 https://boxicons.com | License  https://docs.boxicons.com/free-->
+<path d="M11.999 7.377a4.623 4.623 0 1 0 0 9.248 4.623 4.623 0 0 0 0-9.248m0 7.627a3.004 3.004 0 1 1 0-6.008 3.004 3.004 0 0 1 0 6.008m4.807-8.875a1.078 1.078 0 1 0 0 2.156 1.078 1.078 0 1 0 0-2.156"></path><path d="M20.533 6.111A4.6 4.6 0 0 0 17.9 3.479a6.6 6.6 0 0 0-2.186-.42c-.963-.042-1.268-.054-3.71-.054s-2.755 0-3.71.054a6.6 6.6 0 0 0-2.184.42 4.6 4.6 0 0 0-2.633 2.632 6.6 6.6 0 0 0-.419 2.186c-.043.962-.056 1.267-.056 3.71s0 2.753.056 3.71c.015.748.156 1.486.419 2.187a4.6 4.6 0 0 0 2.634 2.632 6.6 6.6 0 0 0 2.185.45c.963.042 1.268.055 3.71.055s2.755 0 3.71-.055a6.6 6.6 0 0 0 2.186-.419 4.6 4.6 0 0 0 2.633-2.633c.263-.7.404-1.438.419-2.186.043-.962.056-1.267.056-3.71s0-2.753-.056-3.71a6.6 6.6 0 0 0-.421-2.217m-1.218 9.532a5 5 0 0 1-.311 1.688 3 3 0 0 1-1.712 1.711 5 5 0 0 1-1.67.311c-.95.044-1.218.055-3.654.055-2.438 0-2.687 0-3.655-.055a5 5 0 0 1-1.669-.311 3 3 0 0 1-1.719-1.711 5.1 5.1 0 0 1-.311-1.669c-.043-.95-.053-1.218-.053-3.654s0-2.686.053-3.655a5 5 0 0 1 .311-1.687c.305-.789.93-1.41 1.719-1.712a5 5 0 0 1 1.669-.311c.951-.043 1.218-.055 3.655-.055s2.687 0 3.654.055a5 5 0 0 1 1.67.311 3 3 0 0 1 1.712 1.712 5.1 5.1 0 0 1 .311 1.669c.043.951.054 1.218.054 3.655s0 2.698-.043 3.654z"></path>
+</svg>
+                        </a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h4>Liens rapides</h4>
+                    <ul>
+                        <li><a href="index.html">Accueil</a></li>
+                        <li><a href="events.html">Tous les événements</a></li>
+                        <li><a href="ads.html">Partenaires</a></li>
+                        <li><a href="connexion.html">connexion</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="#">FAQ</a></li>
+                        <li><a href="#">Conditions d'utilisation</a></li>
+                        <li><a href="#">Politique de confidentialité</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 YourPass. Tous droits réservés.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+   
+    <script>
+        // Variables globales pour le paiement
+        let selectedPaymentOption = 'MTN'; // Par défaut
+        let eventData = JSON.parse(localStorage.getItem('selectedEvent')) || { price: 5000, name: 'WeLoveYa Festival' };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateSummaryDisplay();
+        });
+
+        // Gérer l'ouverture des sections (Momo, Cartes, Crypto)
+        function togglePaymentSection(sectionId) {
+            document.querySelectorAll('.payment-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(sectionId + '-section').classList.add('active');
+        }
+
+        // Gérer la sélection du réseau (MTN, Moov, etc.)
+        function selectPaymentOption(element, option) {
+            selectedPaymentOption = option.toUpperCase();
+            // Retirer la classe active de tous les boutons de cette section
+            element.parentElement.querySelectorAll('.payment-option').forEach(opt => {
+                opt.classList.remove('active');
+            });
+            // Ajouter la classe au bouton cliqué
+            element.classList.add('active');
+            
+            // Mettre à jour le placeholder du téléphone
+            const phoneInput = document.getElementById("phone");
+            phoneInput.placeholder = `Numéro ${option.toUpperCase()} (ex: 229XXXXXXXX)`;
+        }
+
+        function calculateTotal() {
+            const basePrice = parseInt(eventData.price) || 0;
+            const fees = 250; // Frais fixes comme dans votre HTML initial
+            return basePrice + fees;
+        }
+
+        function updateSummaryDisplay() {
+            const total = calculateTotal();
+            const basePrice = parseInt(eventData.price) || 0;
+            const fees = 250;
+
+            document.getElementById('event-name').textContent = eventData.name;
+            document.getElementById('event-price').textContent = basePrice + " XOF";
+            document.getElementById('subtotal').textContent = basePrice + " XOF";
+            document.getElementById('fees').textContent = fees + " XOF";
+            document.getElementById('total').textContent = total + " XOF";
+        }
+
+        // Fonctions pour les autres modes (non implémentés dans le backend mais requis par le HTML)
+        function processCardPayment() { alert("Le paiement par carte sera disponible bientôt."); }
+        function processCryptoPayment() { alert("Le paiement par crypto sera disponible bientôt."); }
+    </script>
+
+    <style>
+        
+
+    body { background: var(--bg-color); color: var(--text-main); }
+    .payment-card { background: var(--container-bg); border: 1px solid var(--border-color); }
+
+        /* Payment Page Specific Styles */
+        .payment-header {
+            padding: 120px 0 var(--spacing-xl);
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)),
+                        url('image video/welove4.jpeg') center/cover;
+            background-blend-mode: overlay;
+            color: var(--white);
+            position: relative;
+        }
+
+        .payment-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255, 107, 107, 0.9), rgba(99, 102, 241, 0.9));
+            z-index: 1;
+        }
+
+        .payment-header > .container {
+            position: relative;
+            z-index: 2;
+        }
+
+        .payment-breadcrumb {
+            margin-bottom: var(--spacing-md);
+            font-size: var(--font-size-sm);
+        }
+
+        .payment-breadcrumb a {
+            color: var(--white);
+            text-decoration: none;
+            opacity: 0.8;
+        }
+
+        .payment-breadcrumb a:hover {
+            opacity: 1;
+        }
+
+        .payment-header h1 {
+            font-size: var(--font-size-3xl);
+            font-weight: 800;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .payment-header p {
+            font-size: var(--font-size-lg);
+            opacity: 0.9;
+        }
+
+        .payment-main {
+            padding: var(--spacing-2xl) 0;
+            background: var(--gray-50);
+        }
+
+        .payment-layout {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: var(--spacing-2xl);
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .order-summary {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-xl);
+            box-shadow: var(--shadow-md);
+            height: fit-content;
+            position: sticky;
+            top: 100px;
+        }
+
+        .order-summary h2 {
+            font-size: var(--font-size-xl);
+            font-weight: 700;
+            margin-bottom: var(--spacing-lg);
+            color: var(--gray-800);
+        }
+
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: var(--spacing-md) 0;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .item-info h3 {
+            font-size: var(--font-size-lg);
+            font-weight: 600;
+            margin-bottom: var(--spacing-xs);
+            color: var(--gray-800);
+        }
+
+        .item-info p {
+            font-size: var(--font-size-sm);
+            color: var(--gray-600);
+            margin: 0;
+        }
+
+        .item-price {
+            font-size: var(--font-size-lg);
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .order-totals {
+            border-top: 2px solid var(--gray-200);
+            padding-top: var(--spacing-lg);
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-sm);
+            font-size: var(--font-size-base);
+        }
+
+        .total-row.final {
+            font-size: var(--font-size-xl);
+            font-weight: 700;
+            color: var(--gray-800);
+            border-top: 1px solid var(--gray-200);
+            padding-top: var(--spacing-sm);
+            margin-top: var(--spacing-sm);
+        }
+
+        .payment-methods {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-xl);
+            box-shadow: var(--shadow-md);
+        }
+
+        .payment-methods h2 {
+            font-size: var(--font-size-xl);
+            font-weight: 700;
+            margin-bottom: var(--spacing-lg);
+            color: var(--gray-800);
+        }
+
+        .payment-section {
+            margin-bottom: var(--spacing-lg);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            transition: var(--transition-fast);
+        }
+
+        .payment-section:hover {
+            border-color: var(--primary-color);
+        }
+
+        .payment-header-btn {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            padding: var(--spacing-lg);
+            background: var(--white);
+            border: none;
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+
+        .payment-header-btn:hover {
+            background: var(--gray-50);
+        }
+
+        .payment-icon {
+            width: 50px;
+            height: 50px;
+            background: var(--gray-100);
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--font-size-xl);
+        }
+
+        .payment-info {
+            flex: 1;
+            text-align: left;
+        }
+
+        .payment-info h3 {
+            font-size: var(--font-size-lg);
+            font-weight: 600;
+            margin-bottom: var(--spacing-xs);
+            color: var(--gray-800);
+        }
+
+        .payment-info p {
+            font-size: var(--font-size-sm);
+            color: var(--gray-600);
+            margin: 0;
+        }
+
+        .toggle-icon {
+            font-size: var(--font-size-lg);
+            color: var(--gray-400);
+            transition: var(--transition-fast);
+        }
+
+        .payment-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+
+        .payment-content.active {
+            max-height: 1000px;
+            transition: max-height 0.5s ease-in;
+        }
+
+        .payment-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--spacing-md);
+            padding: var(--spacing-lg);
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .payment-option {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            padding: var(--spacing-md);
+            background: var(--gray-50);
+            border: 2px solid transparent;
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+
+        .payment-option:hover {
+            background: var(--white);
+            border-color: var(--gray-300);
+            transform: translateY(-2px);
+        }
+
+        .payment-option.active {
+            background: var(--primary-color);
+            color: var(--white);
+            border-color: var(--primary-color);
+        }
+
+        .option-logo {
+            width: 40px;
+            height: 40px;
+            background: var(--white);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--font-size-lg);
+        }
+
+        .payment-option.active .option-logo {
+            background: var(--white);
+        }
+
+        .option-info {
+            text-align: left;
+        }
+
+        .option-info h4 {
+            font-size: var(--font-size-base);
+            font-weight: 600;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .option-info p {
+            font-size: var(--font-size-sm);
+            opacity: 0.8;
+            margin: 0;
+        }
+
+        .payment-form {
+            padding: var(--spacing-lg);
+            background: var(--gray-50);
+        }
+
+        .form-group {
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: var(--spacing-sm);
+            color: var(--gray-700);
+            text-align: left;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: var(--spacing-md);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            font-size: var(--font-size-base);
+            transition: var(--transition-fast);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .crypto-qr {
+            display: flex;
+            justify-content: center;
+            margin: var(--spacing-lg) 0;
+        }
+
+        .qr-code {
+            text-align: center;
+            padding: var(--spacing-lg);
+            background: var(--white);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            min-width: 200px;
+        }
+
+        .qr-placeholder {
+            width: 150px;
+            height: 150px;
+            background: var(--gray-100);
+            border: 2px dashed var(--gray-300);
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            margin: 0 auto var(--spacing-md);
+        }
+
+        .qr-code p {
+            font-size: var(--font-size-sm);
+            color: var(--gray-600);
+            margin: 0;
+        }
+
+        @media (max-width: 768px) {
+            .payment-layout {
+                grid-template-columns: 1fr;
+                gap: var(--spacing-xl);
+            }
+            
+            .payment-options {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</body>
+</html>

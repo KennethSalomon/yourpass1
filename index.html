@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact - YourPass</title>
+    <script src="https://unpkg.com/scrollreveal"></script>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="manifest" href="meta.json">
+
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+    <div class="nav-container">
+        <div class="logo">
+            <img src="image video/téléchargement (1).png" alt="YourPass Logo">
+        </div>
+
+        <ul class="nav-menu" id="navMenu">
+            <li><a href="index.html" class="nav-link active">Accueil</a></li>
+            <li><a href="events.html" class="nav-link">Événements</a></li>
+            <li><a href="ads.html" class="nav-link">Partenaires</a></li>
+            <li><a href="connexion.html" class="nav-link">Connexion</a></li>
+            <li><a href="contact.html" class="nav-link">Contact</a></li>
+            <div class="nav-indicator"></div>
+        </ul>
+
+        <div class="nav-actions">
+            <button class="theme-toggle">
+                <span class="theme-icon">☀️</span>
+            </button>
+            <button class="menu-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </div>
+</nav>
+
+
+
+<header class="event-header">
+  
+ <video autoplay muted loop id="bg-video">
+   <source src="image video/arrière plan.mp4" type="video/mp4">
+ </video>
+
+  <div class="overlay">
+  
+   <div id="countdown"></div>
+ </div>
+
+<button id="toggleSound">🔇</button>
+
+ 
+ 
+</header>
+  
+    <!-- Search Section -->
+    <section class="search-section">
+        <div class="container">
+            <div class="search-container">
+                <h3></h3>
+                <div class="search-form">
+                    <div class="search-group">
+                        <input type="text" placeholder="Ville..." class="search-input">
+                        <span class="search-icon">📍</span>
+                    </div>
+                    <div class="search-group">
+                        <input type="date" class="search-input">
+                        <span class="search-icon">📅</span>
+                    </div>
+                    <div class="search-group">
+                        <select class="search-input">
+                            <option value="">Type d'événement</option>
+                            <option value="concert">Concert</option>
+                            <option value="festival">Festival</option>
+                            <option value="culture">Culture</option>
+                            <option value="food">Gastronomie</option>
+                        </select>
+                        <span class="search-icon">🎭</span>
+                    </div>
+                    <button class="btn-primary search-btn">Rechercher</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Events -->
+    <section class="featured-events">
+        <div class="container">
+            <h2>Événements à la une</h2>
+            <div class="events-grid">
+                <!-- WeLoveYa Festival -->
+                <div class="event-card">
+                    <div class="event-image" style="background-image: url('image video/welove.jpg'); background-size: cover; background-position: center;">
+                        <div class="event-date">
+                            <span class="day">15</span>
+                            <span class="month">MAR</span>
+                        </div>
+                    </div>
+                    <div class="event-content">
+                        <h3>WeLoveYa Festival</h3>
+                        <p class="event-location">📍 Cotonou, Stade de l'Amitié</p>
+                        <p class="event-time">📅 15-17 Mars 2024</p>
+                        <div class="event-price">
+                            <span class="price"></span>
+                            <span class="price-label">Standard</span>
+                        </div>
+                        <button class="btn-secondary" onclick="goToPayment(1, 'WeLoveYa Festival', 5000, 'standard')">Acheter un billet</button>
+                    </div>
+                </div>
+
+                <!-- Eat & Drink Festival -->
+                <div class="event-card">
+                    <div class="event-image" style="background-image: url('image video/eatdrink.jpeg'); background-size: cover; background-position: center;">
+                        <div class="event-date">
+                            <span class="day">20</span>
+                            <span class="month">AVR</span>
+                        </div>
+                    </div>
+                    <div class="event-content">
+                        <h3>Eat & Drink Festival</h3>
+                        <p class="event-location">📍 Porto-Novo, Place Jean Bayol</p>
+                        <p class="event-time">📅 20-21 Avril 2026</p>
+                        <div class="event-price">
+                            <span class="price"></span>
+                            <span class="price-label">Standard</span>
+                        </div>
+                        <button class="btn-secondary" onclick="goToPayment(2, 'Eat & Drink Festival', 3000, 'standard')">Acheter un billet</button>
+                    </div>
+                </div>
+
+                <!-- Vodun Days -->
+                <div class="event-card">
+                    <div class="event-image" style="background-image: url('image video/vodun.jpeg'); background-size: cover; background-position: center;">
+                        <div class="event-date">
+                            <span class="day">10</span>
+                            <span class="month">JAN</span>
+                        </div>
+                    </div>
+                    <div class="event-content">
+                        <h3>Vodun Days</h3>
+                        <p class="event-location">📍 Ouidah, Route des Esclaves</p>
+                        <p class="event-time">📅 10 Janvier 2026</p>
+                        <div class="event-price">
+                            <span class="price"></span>
+                            <span class="price-label">Standard</span>
+                        </div>
+                        <button class="btn-secondary" onclick="goToPayment(3, 'Vodun Days', 2500, 'standard')">Acheter un billet</button>
+                    </div>
+                </div>
+
+                <!-- Arts Festival Benin -->
+                <div class="event-card">
+                    <div class="event-image" style="background-image: url('image video/vodun1.jpeg'); background-size: cover; background-position: center;">
+                        <div class="event-date">
+                            <span class="day">25</span>
+                            <span class="month">MAI</span>
+                        </div>
+                    </div>
+                    <div class="event-content">
+                        <h3>Arts Festival Benin</h3>
+                        <p class="event-location">📍 Cotonou, Centre Culturel</p>
+                        <p class="event-time">📅 25-27 Mai 2026</p>
+                        <div class="event-price">
+                            <span class="price"></span>
+                            <span class="price-label">Standard</span>
+                        </div>
+                        <button class="btn-secondary" onclick="goToPayment(4, 'Arts Festival Benin', 4000, 'standard')">Acheter un billet</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Newsletter -->
+    <section class="newsletter" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)),
+                url('image video/eatdrink.jpeg') center/cover;
+                background-blend-mode: overlay;
+                position: relative;">
+        <div class="newsletter-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, rgba(107, 255, 243, 0.9), rgb(31, 5, 58)); z-index: 1;"></div>
+        <div class="container" style="position: relative; z-index: 2;">
+            <div class="newsletter-content">
+                <h3>Restez informé</h3>
+                <p>Recevez les dernières actualités sur les événements au Bénin</p>
+                <form class="newsletter-form" onsubmit="subscribeNewsletter(event)">
+                    <input type="email" placeholder="Votre email" required>
+                    <button type="submit" class="btn-primary">S'inscrire</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="logo">
+  <img src="image video/téléchargement (1).png" alt="YourPass Logo">
+            </div><h4>YourPass</h4><br>
+                    <p>Votre plateforme de billetterie pour tous les événements au Bénin</p>
+                    <div class="social-links">
+                        <a href="#">
+                            <svg  xmlns="http://www.w3.org/2000/svg" width="24" height="24"  
+fill="currentColor" viewBox="0 0 24 24" >
+<!--Boxicons v3.0.8 https://boxicons.com | License  https://docs.boxicons.com/free-->
+<path d="M13.68 10.62 20.24 3h-1.55L13 9.62 8.45 3H3.19l6.88 10.01L3.19 21h1.55l6.01-6.99 4.8 6.99h5.24l-7.13-10.38Zm-2.13 2.47-.7-1-5.54-7.93H7.7l4.47 6.4.7 1 5.82 8.32H16.3z"></path>
+</svg>
+                        </a>
+                        <a href="#">
+                          <svg  xmlns="http://www.w3.org/2000/svg" width="16" height="16"  
+fill="currentColor" viewBox="0 0 24 24" >
+<!--Boxicons v3.0.8 https://boxicons.com | License  https://docs.boxicons.com/free-->
+<path d="M12 2.06c-5.5 0-10 4.5-10 10 0 4.94 3.61 9.06 8.33 9.89l.06-.05h-.06v-7.06h-2.5v-2.78h2.5V9.84c0-2.5 1.61-3.89 3.89-3.89.72 0 1.5.11 2.22.22v2.56h-1.28c-1.22 0-1.5.61-1.5 1.39v1.94h2.67l-.44 2.78h-2.22v7.06h-.06l.06.05c4.72-.83 8.33-4.94 8.33-9.89 0-5.5-4.5-10-10-10"></path>
+</svg>
+                        </a>
+                        <a href="#">
+                            <svg  xmlns="http://www.w3.org/2000/svg" width="16" height="16"  
+fill="currentColor" viewBox="0 0 24 24" >
+<!--Boxicons v3.0.8 https://boxicons.com | License  https://docs.boxicons.com/free-->
+<path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 3 3 0 0 1 .88.13V9.4a7 7 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a5 5 0 0 1-1-.1z"></path>
+</svg>
+                        </a>
+                        <a href="#">
+                            <svg  xmlns="http://www.w3.org/2000/svg" width="16" height="16"  
+fill="currentColor" viewBox="0 0 24 24" >
+<!--Boxicons v3.0.8 https://boxicons.com | License  https://docs.boxicons.com/free-->
+<path d="M11.999 7.377a4.623 4.623 0 1 0 0 9.248 4.623 4.623 0 0 0 0-9.248m0 7.627a3.004 3.004 0 1 1 0-6.008 3.004 3.004 0 0 1 0 6.008m4.807-8.875a1.078 1.078 0 1 0 0 2.156 1.078 1.078 0 1 0 0-2.156"></path><path d="M20.533 6.111A4.6 4.6 0 0 0 17.9 3.479a6.6 6.6 0 0 0-2.186-.42c-.963-.042-1.268-.054-3.71-.054s-2.755 0-3.71.054a6.6 6.6 0 0 0-2.184.42 4.6 4.6 0 0 0-2.633 2.632 6.6 6.6 0 0 0-.419 2.186c-.043.962-.056 1.267-.056 3.71s0 2.753.056 3.71c.015.748.156 1.486.419 2.187a4.6 4.6 0 0 0 2.634 2.632 6.6 6.6 0 0 0 2.185.45c.963.042 1.268.055 3.71.055s2.755 0 3.71-.055a6.6 6.6 0 0 0 2.186-.419 4.6 4.6 0 0 0 2.633-2.633c.263-.7.404-1.438.419-2.186.043-.962.056-1.267.056-3.71s0-2.753-.056-3.71a6.6 6.6 0 0 0-.421-2.217m-1.218 9.532a5 5 0 0 1-.311 1.688 3 3 0 0 1-1.712 1.711 5 5 0 0 1-1.67.311c-.95.044-1.218.055-3.654.055-2.438 0-2.687 0-3.655-.055a5 5 0 0 1-1.669-.311 3 3 0 0 1-1.719-1.711 5.1 5.1 0 0 1-.311-1.669c-.043-.95-.053-1.218-.053-3.654s0-2.686.053-3.655a5 5 0 0 1 .311-1.687c.305-.789.93-1.41 1.719-1.712a5 5 0 0 1 1.669-.311c.951-.043 1.218-.055 3.655-.055s2.687 0 3.654.055a5 5 0 0 1 1.67.311 3 3 0 0 1 1.712 1.712 5.1 5.1 0 0 1 .311 1.669c.043.951.054 1.218.054 3.655s0 2.698-.043 3.654z"></path>
+</svg>
+                        </a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h4>Liens rapides</h4>
+                    <ul>
+                        <li><a href="index.html">Accueil</a></li>
+                        <li><a href="events.html">Tous les événements</a></li>
+                        <li><a href="ads.html">Partenaires</a></li>
+                        <li><a href="connexion.html">connexion</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="#">FAQ</a></li>
+                        <li><a href="#">Conditions d'utilisation</a></li>
+                        <li><a href="#">Politique de confidentialité</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 YourPass. Tous droits réservés.</p>
+            </div>
+        </div>
+    </footer>
+    <script src="js/main.js"></script>
+    <script>
+        // Fonction pour aller directement à la page de paiement
+        function goToPayment(eventId, eventName, price, ticketType) {
+            // Sauvegarder les données de l'événement pour la page de paiement
+            const eventData = {
+                id: eventId,
+                name: eventName,
+                price: price,
+                ticketType: ticketType,
+                quantity: 1,
+                date: new Date().toISOString()
+            };
+            
+            localStorage.setItem('selectedEvent', JSON.stringify(eventData));
+            
+            // Rediriger vers la page de paiement
+            window.location.href = 'paiement.html';
+        }
+
+        // Slider functionality
+        let currentSlideIndex = 0;
+        
+        function changeSlide(direction) {
+    const slides = document.querySelectorAll('.slide');
+    const dots = document.querySelectorAll('.dot');
+    
+    if (slides.length === 0) return; // Sécurité
+
+    slides[currentSlideIndex].classList.remove('active');
+    dots[currentSlideIndex].classList.remove('active');
+    
+    currentSlideIndex = (currentSlideIndex + direction + slides.length) % slides.length;
+    
+    slides[currentSlideIndex].classList.add('active');
+    dots[currentSlideIndex].classList.add('active');
+}
+        
+        function currentSlide(n) {
+            const slides = document.querySelectorAll('.slide');
+            const dots = document.querySelectorAll('.dot');
+            
+            slides[currentSlideIndex].classList.remove('active');
+            dots[currentSlideIndex].classList.remove('active');
+            
+            currentSlideIndex = n - 1;
+            
+            slides[currentSlideIndex].classList.add('active');
+            dots[currentSlideIndex].classList.add('active');
+        }
+        
+        // Auto-slide
+        setInterval(() => {
+            changeSlide(1);
+        }, 5000);
+        
+        // Newsletter subscription
+        function subscribeNewsletter(event) {
+            event.preventDefault();
+            const email = event.target.querySelector('input[type="email"]').value;
+            alert('Merci pour votre inscription ! Vous recevrez nos actualités sur : ' + email);
+            event.target.reset();
+        }
+    </script>
+</body>
+</html>

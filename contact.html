@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact - YourPass</title>
+    <script src="https://unpkg.com/scrollreveal"></script>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="manifest" href="meta.json">
+
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <img src="image video/téléchargement (1).png" alt="YourPass Logo">
+            </div>
+
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="index.html" class="nav-link active">Accueil</a></li>
+                <li><a href="events.html" class="nav-link">Événements</a></li>
+                <li><a href="ads.html" class="nav-link">Partenaires</a></li>
+                <li><a href="connexion.html" class="nav-link">Connexion</a></li>
+                <li><a href="contact.html" class="nav-link">Contact</a></li>
+                <div class="nav-indicator"></div>
+            </ul>
+
+            <div class="nav-actions">
+                <button class="theme-toggle">
+                    <span class="theme-icon">☀️</span>
+                </button>
+                <button class="menu-toggle">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <section class="page-header">
+        <div class="container">
+            <h1>Contactez-nous</h1>
+            <p>Nous sommes là pour vous aider à organiser des événements inoubliables</p>
+        </div>
+    </section>
+
+    <!-- Contact Content -->
+    <main class="contact-main">
+        <div class="container">
+            <div class="contact-layout">
+                <!-- Contact Form -->
+                <div class="contact-form-section">
+                    <div class="contact-info">
+                        <h2>Parlons-nous</h2>
+                        <p>Que vous soyez organisateur, sponsor ou participant, notre équipe est à votre disposition
+                            pour répondre à toutes vos questions.</p>
+
+                        <div class="contact-methods">
+                            <div class="contact-method">
+                                <div class="contact-icon">📞</div>
+                                <div class="contact-details">
+                                    <h3>Téléphone</h3>
+                                    <p>+229 XX XX XX XX</p>
+                                    <p>Lun-Ven: 8h-18h</p>
+                                </div>
+                            </div>
+
+                            <div class="contact-method">
+                                <div class="contact-icon">📧</div>
+                                <div class="contact-details">
+                                    <h3>WhatsApp</h3>
+                                    <p>+229 XX XX XX XX</p>
+                                    <p>Disponible 24/7</p>
+                                </div>
+                            </div>
+
+                            <div class="contact-method">
+                                <div class="contact-icon">✉️</div>
+                                <div class="contact-details">
+                                    <h3>Email</h3>
+                                    <p>support@yourpass.bj</p>
+                                    <p>Réponse sous 24h</p>
+                                </div>
+                            </div>
+
+                            <div class="contact-method">
+                                <div class="contact-icon">📍</div>
+                                <div class="contact-details">
+                                    <h3>Adresse</h3>
+                                    <p>123 Avenue de la Marina</p>
+                                    <p>Cotonou, Bénin</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="contact-form-wrapper">
+                        <h2>Envoyez-nous un message</h2>
+                        <form class="contact-form" onsubmit="handleContactSubmit(event)">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Nom complet *</label>
+                                    <input type="text" name="name" required placeholder="Votre nom complet">
+                                </div>
+                                <div class="form-group">
+                                    <label>Email *</label>
+                                    <input type="email" name="email" required placeholder="votre.email@email.com">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Sujet *</label>
+                                <select name="subject" required>
+                                    <option value="">Sélectionnez un sujet</option>
+                                    <option value="general">Question générale</option>
+                                    <option value="technical">Support technique</option>
+                                    <option value="partnership">Partenariat</option>
+                                    <option value="billing">Facturation</option>
+                                    <option value="feedback">Suggestion</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Message *</label>
+                                <textarea name="message" rows="6" required
+                                    placeholder="Décrivez votre question ou besoin..."></textarea>
+                            </div>
+
+                            <button type="submit" class="btn-primary">Envoyer le message</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- FAQ Section -->
+                <div class="faq-section">
+                    <h2>Questions Fréquemment Posées</h2>
+
+                    <div class="faq-list">
+                        <div class="faq-item">
+                            <button class="faq-question" onclick="toggleFAQ(this)">
+                                <span class="faq-icon">+</span>
+                                <span class="faq-text">Comment acheter des billets sur YourPass ?</span>
+                            </button>
+                            <div class="faq-answer">
+                                <p>Pour acheter des billets :</p>
+                                <ol>
+                                    <li>Browsez les événements sur la page d'accueil ou la page événements</li>
+                                    <li>Cliquez sur l'événement qui vous intéresse</li>
+                                    <li>Sélectionnez le type de billet (Standard ou VIP)</li>
+                                    <li>Choisissez la quantité</li>
+                                    <li>Cliquez sur "Acheter un billet"</li>
+                                    <li>Remplissez les informations de paiement</li>
+                                    <li>Confirmez votre achat</li>
+                                </ol>
+                            </div>
+                        </div>
+
+                        <div class="faq-item">
+                            <button class="faq-question" onclick="toggleFAQ(this)">
+                                <span class="faq-icon">+</span>
+                                <span class="faq-text">Quels modes de paiement sont acceptés ?</span>
+                            </button>
+                            <div class="faq-answer">
+                                <p>Nous acceptons plusieurs modes de paiement sécurisés :</p>
+                                <ul>
+                                    <li>Cartes bancaires (Visa, Mastercard, etc.)</li>
+                                    <li>Mobile Money (MTN Mobile Money, Moov Money)</li>
+                                    <li>Orange Money</li>
+                                    <li>Paiement par virement bancaire</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="faq-item">
+                            <button class="faq-question" onclick="toggleFAQ(this)">
+                                <span class="faq-icon">+</span>
+                                <span class="faq-text">Puis-je obtenir un remboursement ?</span>
+                            </button>
+                            <div class="faq-answer">
+                                <p>Notre politique de remboursement :</p>
+                                <ul>
+                                    <li>Remboursement complet jusqu'à 48h avant l'événement</li>
+                                    <li>Remboursement partiel jusqu'à 24h avant l'événement</li>
+                                    <li>Aucun remboursement après 24h avant l'événement</li>
+                                    <li>En cas d'annulation de l'événement, remboursement complet</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="logo">
+                        <img src="image video/téléchargement (1).png" alt="YourPass Logo">
+                    </div>
+                    <h4>YourPass</h4><br>
+                    <p>Votre plateforme de billetterie pour tous les événements au Bénin</p>
+                    <div class="social-links">
+                        <a href="#">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
+                                viewBox="0 0 24 24">
+                                <!--Boxicons v3.0.8 https://boxicons.com | License  https://docs.boxicons.com/free-->
+                                <path
+                                    d="M13.68 10.62 20.24 3h-1.55L13 9.62 8.45 3H3.19l6.88 10.01L3.19 21h1.55l6.01-6.99 4.8 6.99h5.24l-7.13-10.38Zm-2.13 2.47-.7-1-5.54-7.93H7.7l4.47 6.4.7 1 5.82 8.32H16.3z">
+                                </path>
+                            </svg>
+                        </a>
+                        <a href="#">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                viewBox="0 0 24 24">
+                                <!--Boxicons v3.0.8 https://boxicons.com | License  https://docs.boxicons.com/free-->
+                                <path
+                                    d="M12 2.06c-5.5 0-10 4.5-10 10 0 4.94 3.61 9.06 8.33 9.89l.06-.05h-.06v-7.06h-2.5v-2.78h2.5V9.84c0-2.5 1.61-3.89 3.89-3.89.72 0 1.5.11 2.22.22v2.56h-1.28c-1.22 0-1.5.61-1.5 1.39v1.94h2.67l-.44 2.78h-2.22v7.06h-.06l.06.05c4.72-.83 8.33-4.94 8.33-9.89 0-5.5-4.5-10-10-10">
+                                </path>
+                            </svg>
+                        </a>
+                        <a href="#">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                viewBox="0 0 24 24">
+                                <!--Boxicons v3.0.8 https://boxicons.com | License  https://docs.boxicons.com/free-->
+                                <path
+                                    d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 3 3 0 0 1 .88.13V9.4a7 7 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a5 5 0 0 1-1-.1z">
+                                </path>
+                            </svg>
+                        </a>
+                        <a href="#">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                viewBox="0 0 24 24">
+                                <!--Boxicons v3.0.8 https://boxicons.com | License  https://docs.boxicons.com/free-->
+                                <path
+                                    d="M11.999 7.377a4.623 4.623 0 1 0 0 9.248 4.623 4.623 0 0 0 0-9.248m0 7.627a3.004 3.004 0 1 1 0-6.008 3.004 3.004 0 0 1 0 6.008m4.807-8.875a1.078 1.078 0 1 0 0 2.156 1.078 1.078 0 1 0 0-2.156">
+                                </path>
+                                <path
+                                    d="M20.533 6.111A4.6 4.6 0 0 0 17.9 3.479a6.6 6.6 0 0 0-2.186-.42c-.963-.042-1.268-.054-3.71-.054s-2.755 0-3.71.054a6.6 6.6 0 0 0-2.184.42 4.6 4.6 0 0 0-2.633 2.632 6.6 6.6 0 0 0-.419 2.186c-.043.962-.056 1.267-.056 3.71s0 2.753.056 3.71c.015.748.156 1.486.419 2.187a4.6 4.6 0 0 0 2.634 2.632 6.6 6.6 0 0 0 2.185.45c.963.042 1.268.055 3.71.055s2.755 0 3.71-.055a6.6 6.6 0 0 0 2.186-.419 4.6 4.6 0 0 0 2.633-2.633c.263-.7.404-1.438.419-2.186.043-.962.056-1.267.056-3.71s0-2.753-.056-3.71a6.6 6.6 0 0 0-.421-2.217m-1.218 9.532a5 5 0 0 1-.311 1.688 3 3 0 0 1-1.712 1.711 5 5 0 0 1-1.67.311c-.95.044-1.218.055-3.654.055-2.438 0-2.687 0-3.655-.055a5 5 0 0 1-1.669-.311 3 3 0 0 1-1.719-1.711 5.1 5.1 0 0 1-.311-1.669c-.043-.95-.053-1.218-.053-3.654s0-2.686.053-3.655a5 5 0 0 1 .311-1.687c.305-.789.93-1.41 1.719-1.712a5 5 0 0 1 1.669-.311c.951-.043 1.218-.055 3.655-.055s2.687 0 3.654.055a5 5 0 0 1 1.67.311 3 3 0 0 1 1.712 1.712 5.1 5.1 0 0 1 .311 1.669c.043.951.054 1.218.054 3.655s0 2.698-.043 3.654z">
+                                </path>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h4>Liens rapides</h4>
+                    <ul>
+                        <li><a href="index.html">Accueil</a></li>
+                        <li><a href="events.html">Tous les événements</a></li>
+                        <li><a href="ads.html">Partenaires</a></li>
+                        <li><a href="connexion.html">connexion</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="#">FAQ</a></li>
+                        <li><a href="#">Conditions d'utilisation</a></li>
+                        <li><a href="#">Politique de confidentialité</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 YourPass. Tous droits réservés.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script>
+        function handleContactSubmit(event) {
+            event.preventDefault();
+            showNotification('Votre message a été envoyé avec succès !', 'success');
+            event.target.reset();
+        }
+
+        function toggleFAQ(element) {
+            const answer = element.nextElementSibling;
+            const icon = element.querySelector('.faq-icon');
+
+            if (answer.style.display === 'block') {
+                answer.style.display = 'none';
+                icon.textContent = '+';
+                element.classList.remove('active');
+            } else {
+                document.querySelectorAll('.faq-answer').forEach(a => a.style.display = 'none');
+                document.querySelectorAll('.faq-question').forEach(q => q.classList.remove('active'));
+                document.querySelectorAll('.faq-icon').forEach(i => i.textContent = '+');
+
+                answer.style.display = 'block';
+                icon.textContent = '-';
+                element.classList.add('active');
+            }
+        }
+    </script>
+
+    <style>
+        .page-header {
+            padding: 120px 0 var(--spacing-3xl);
+            background: linear-gradient(135deg, rgba(107, 255, 243, 0.9), rgba(28, 30, 134, 0.9));
+            color: var(--white);
+            text-align: center;
+        }
+
+        .page-header h1 {
+            font-size: var(--font-size-4xl);
+            font-weight: 800;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .contact-main {
+            padding: var(--spacing-3xl) 0;
+            background: var(--gray-50);
+        }
+
+        .contact-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-3xl);
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .contact-form-section {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xl);
+        }
+
+        .contact-info {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-2xl);
+            box-shadow: var(--shadow-md);
+        }
+
+        .contact-methods {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--spacing-lg);
+        }
+
+        .contact-method {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            padding: var(--spacing-lg);
+            background: var(--gray-50);
+            border-radius: var(--radius-lg);
+            transition: var(--transition-fast);
+        }
+
+        .contact-method:hover {
+            background:  rgba(28, 30, 134, 0.9);
+            color: var(--white);
+            transform: translateY(-2px);
+        }
+
+        .contact-icon {
+            width: 50px;
+            height: 50px;
+            background: blueviolet;
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--font-size-xl);
+            color: var(--primary-color);
+        }
+
+        .contact-form-wrapper {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-2xl);
+            box-shadow: var(--shadow-md);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .form-group {
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: var(--spacing-sm);
+            color: var(--gray-700);
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: var(--spacing-md);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            font-size: var(--font-size-base);
+        }
+
+        .faq-section {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-2xl);
+            box-shadow: var(--shadow-md);
+        }
+
+        .faq-item {
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .faq-question {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--spacing-lg);
+            background: none;
+            border: none;
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .faq-question:hover {
+            background: var(--gray-50);
+        }
+
+        .faq-question.active {
+            background: var(--primary-color);
+            color: var(--white);
+        }
+
+        .faq-icon {
+            width: 30px;
+            height: 30px;
+            background: var(--gray-200);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        .faq-answer {
+            display: none;
+            padding: var(--spacing-lg);
+            background: var(--gray-50);
+        }
+
+        @media (max-width: 768px) {
+            .contact-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</body>
+
+</html>
