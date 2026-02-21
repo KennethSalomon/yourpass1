@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="manifest" href="meta.json">
-
+    <link rel="stylesheet" href="css/profile.css">
 </head>
 <body>
     <!-- Navigation -->
@@ -19,13 +19,14 @@
         <div class="logo">
             <img src="image video/téléchargement (1).png" alt="YourPass Logo">
         </div>
-
+       <br><br>
         <ul class="nav-menu" id="navMenu">
             <li><a href="index.html" class="nav-link active">Accueil</a></li>
             <li><a href="events.html" class="nav-link">Événements</a></li>
             <li><a href="ads.html" class="nav-link">Partenaires</a></li>
             <li><a href="connexion.html" class="nav-link">Connexion</a></li>
             <li><a href="contact.html" class="nav-link">Contact</a></li>
+            <li><a href="dashboard.html" class="nav-link">Profile</a></li>
             <div class="nav-indicator"></div>
         </ul>
 
@@ -249,8 +250,10 @@ fill="currentColor" viewBox="0 0 24 24" >
             </div>
         </div>
     </footer>
-
+    
     <script src="js/main.js"></script>
+    <script src="supabase-auth.js"></script>
+    <script src="js/profile.js"></script>
     <script>
         let allEvents = [];
         let filteredEvents = [];
@@ -275,7 +278,7 @@ fill="currentColor" viewBox="0 0 24 24" >
                     date: '2024-03-15',
                     endDate: '2024-03-17',
                     time: '18:00 - 23:00',
-                    
+                    price: 10000,
                     vipPrice: 15000,
                     category: 'festival',
                     image: 'welove.jpg',
@@ -291,7 +294,7 @@ fill="currentColor" viewBox="0 0 24 24" >
                     date: '2024-04-20',
                     endDate: '2024-04-21',
                     time: '12:00 - 22:00',
-                    
+                    Price: 4000,
                     vipPrice: 7500,
                     category: 'food',
                     image: 'eatdrink.jpeg',
@@ -307,7 +310,7 @@ fill="currentColor" viewBox="0 0 24 24" >
                     date: '2024-01-10',
                     endDate: '2024-01-10',
                     time: '09:00 - 18:00',
-                    
+                    Price:2000,
                     vipPrice: 5000,
                     category: 'culture',
                     image: 'vodun.jpeg',
@@ -323,7 +326,7 @@ fill="currentColor" viewBox="0 0 24 24" >
                     date: '2024-05-25',
                     endDate: '2024-05-27',
                     time: '10:00 - 20:00',
-                    
+                    Price:5000,
                     vipPrice: 10000,
                     category: 'festival',
                     image: 'vodun1.jpeg',
@@ -339,7 +342,7 @@ fill="currentColor" viewBox="0 0 24 24" >
                     date: '2024-02-14',
                     endDate: '2024-02-14',
                     time: '20:00 - 23:00',
-                    
+                    Price:10000,
                     vipPrice: 15000,
                     category: 'concert',
                     image: 'welove4.jpeg',
@@ -355,7 +358,7 @@ fill="currentColor" viewBox="0 0 24 24" >
                     date: '2024-06-20',
                     endDate: '2024-06-21',
                     time: '09:00 - 17:00',
-                    
+                    Price:15000,
                     vipPrice: 20000,
                     category: 'conference',
                     image: 'welove5.jpeg',

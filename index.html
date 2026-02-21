@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="manifest" href="meta.json">
-
+    <link rel="stylesheet" href="css/profile.css">
 </head>
 <body>
     <!-- Navigation -->
@@ -19,13 +19,14 @@
         <div class="logo">
             <img src="image video/téléchargement (1).png" alt="YourPass Logo">
         </div>
-
+        <br><br>
         <ul class="nav-menu" id="navMenu">
             <li><a href="index.html" class="nav-link active">Accueil</a></li>
             <li><a href="events.html" class="nav-link">Événements</a></li>
             <li><a href="ads.html" class="nav-link">Partenaires</a></li>
             <li><a href="connexion.html" class="nav-link">Connexion</a></li>
             <li><a href="contact.html" class="nav-link">Contact</a></li>
+            <li><a href="dashboard.html" class="nav-link">profile</a></li>
             <div class="nav-indicator"></div>
         </ul>
 
@@ -263,6 +264,8 @@ fill="currentColor" viewBox="0 0 24 24" >
         </div>
     </footer>
     <script src="js/main.js"></script>
+    <script src="supabase-auth.js"></script>
+    <script src="js/profile.js"></script>
     <script>
         // Fonction pour aller directement à la page de paiement
         function goToPayment(eventId, eventName, price, ticketType) {
@@ -325,6 +328,8 @@ fill="currentColor" viewBox="0 0 24 24" >
             alert('Merci pour votre inscription ! Vous recevrez nos actualités sur : ' + email);
             event.target.reset();
         }
+
+        
     </script>
 </body>
 </html>

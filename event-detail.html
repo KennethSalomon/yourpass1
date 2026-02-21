@@ -6,6 +6,8 @@
     <title>Détails de l'Événement - YourPass</title>
     <script src="https://unpkg.com/scrollreveal"></script>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/profile.css">
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -20,13 +22,14 @@
   <img src="image video/téléchargement (1).png" alt="YourPass Logo">
             </div>
 
-
+          <br><br>
             <ul class="nav-menu">
                 <li><a href="index.html" class="nav-link active">Accueil</a></li>
                 <li><a href="events.html" class="nav-link">Événements</a></li>
                 <li><a href="ads.html" class="nav-link">Partenaires</a></li>
                 <li><a href="connexion.html" class="nav-link">Connexion</a></li>
                 <li><a href="contact.html" class="nav-link">Contact</a></li>
+                <li><a href="dashboard.html" class="nav-link">Profile</a></li>
                 <div class="nav-indicator"></div>
             </ul>
                    
@@ -114,6 +117,8 @@ fill="currentColor" viewBox="0 0 24 24" >
         </div>
     </footer>
     <script src="js/main.js"></script>
+    <script src="supabase-auth.js"></script>
+    <script src="js/profile.js"></script>
     <script>
         // Event Detail Page JavaScript
         let currentEvent = null;
@@ -472,7 +477,7 @@ fill="currentColor" viewBox="0 0 24 24" >
 
         // Proceed to checkout
         function proceedToCheckout() {
-            alert('Bouton cliqué! Événement: ' + currentEvent.title);
+           
             
             // Sauvegarder les données de l'événement pour la page de paiement
             const eventData = {
@@ -485,10 +490,10 @@ fill="currentColor" viewBox="0 0 24 24" >
             };
             
             localStorage.setItem('selectedEvent', JSON.stringify(eventData));
-            alert('Données sauvegardées: ' + JSON.stringify(eventData));
+           
             
             // Rediriger vers la page de paiement
-            alert('Redirection vers paiement.html...');
+        
             window.location.href = 'paiement.html';
         }
 

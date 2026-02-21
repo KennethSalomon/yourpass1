@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mon Espace - YourPass</title>
+  <script src="https://unpkg.com/scrollreveal"></script>
+  <link rel="stylesheet" href="css/style.css">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="manifest" href="meta.json">
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <div class="logo">
+        <img src="image video/téléchargement (1).png" alt="YourPass Logo">
+      </div>
+      <br><br>
+      <ul class="nav-menu" id="navMenu">
+        <li><a href="index.html" class="nav-link">Accueil</a></li>
+        <li><a href="events.html" class="nav-link">Événements</a></li>
+        <li><a href="ads.html" class="nav-link">Partenaires</a></li>
+        <li><a href="connexion.html" class="nav-link">Connexion</a></li>
+        <li><a href="contact.html" class="nav-link">Contact</a></li>
+        <li ><a href="dashboard.html" class="nav-link">Profile</a></li>
+        <div class="nav-indicator"></div>
+      </ul>
+      <div class="nav-actions">
+        <button class="theme-toggle"><span class="theme-icon">☀️</span></button>
+        <button class="menu-toggle">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Dashboard -->
+  <main class="dashboard-main">
+    <div class="container">
+      <div class="dashboard-header reveal">
+        <h1>Mon Espace</h1>
+        <p>Gérez vos billets et votre profil YourPass</p>
+      </div>
+
+      <div class="dashboard-grid">
+        <!-- Sidebar -->
+        <aside class="dashboard-sidebar reveal">
+          <div class="user-avatar">👤</div>
+          <div class="user-name" id="userName">Utilisateur</div>
+          <div class="user-email" id="userEmail">—</div>
+
+          <ul class="sidebar-nav">
+            <li>
+              <a href="#tickets" class="active" onclick="showTab('tickets', this)">
+                🎫 Mes billets
+              </a>
+            </li>
+            <li>
+              <a href="#profil" onclick="showTab('profil', this)">
+                👤 Mon profil
+              </a>
+            </li>
+            <li>
+              <a href="events.html">
+                🎭 Voir les événements
+              </a>
+            </li>
+            <li>
+              <a href="#" onclick="logout()">
+                🚪 Se déconnecter
+              </a>
+            </li>
+          </ul>
+        </aside>
+
+        <!-- Contenu principal -->
+        <section class="dashboard-content reveal">
+
+          <!-- Statistiques -->
+          <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+              <div class="stat-number" id="statTickets">0</div>
+              <div class="stat-label">Billets achetés</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number" id="statEvents">0</div>
+              <div class="stat-label">Événements</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number" id="statAmount">0</div>
+              <div class="stat-label">XOF dépensés</div>
+            </div>
+          </div>
+
+          <!-- Onglet Billets -->
+          <div id="tab-tickets">
+            <h2 class="section-title">🎫 Mes Billets</h2>
+            <div id="my-tickets">
+              <div style="text-align:center; padding: 2rem;">
+                <div class="loading"></div>
+                <p style="margin-top:1rem; color: var(--gray-500);">Chargement…</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Onglet Profil -->
+          <div id="tab-profil" style="display:none;">
+            <h2 class="section-title">👤 Mon Profil</h2>
+            <form class="partnership-form" onsubmit="saveProfile(event)">
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Prénom</label>
+                  <input type="text" id="profileFirstname" placeholder="Votre prénom">
+                </div>
+                <div class="form-group">
+                  <label>Nom</label>
+                  <input type="text" id="profileLastname" placeholder="Votre nom">
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="profileEmail" placeholder="votre@email.com">
+              </div>
+              <div class="form-group">
+                <label>Téléphone</label>
+                <input type="tel" id="profilePhone" placeholder="+229 XX XX XX XX">
+              </div>
+              <button type="submit" class="btn-primary" style="width:auto;">
+                Enregistrer les modifications
+              </button>
+            </form>
+          </div>
+
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <div class="logo"><img src="image video/téléchargement (1).png" alt="YourPass Logo"></div>
+          <h4>YourPass</h4><br>
+          <p>Votre plateforme de billetterie pour tous les événements au Bénin</p>
+        </div>
+        <div class="footer-section">
+          <h4>Liens rapides</h4>
+          <ul>
+            <li><a href="index.html">Accueil</a></li>
+            <li><a href="events.html">Tous les événements</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>Support</h4>
+          <ul>
+            <li><a href="#">FAQ</a></li>
+            <li><a href="#">Conditions d'utilisation</a></li>
+            <li><a href="#">Politique de confidentialité</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 YourPass. Tous droits réservés.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/events-data.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    /* ── Gestion onglets ── */
+    function showTab(tab, link) {
+      document.querySelectorAll('[id^="tab-"]').forEach(el => el.style.display = 'none');
+      document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
+      document.getElementById('tab-' + tab).style.display = 'block';
+      if (link) link.classList.add('active');
+    }
+
+    /* ── Chargement des données utilisateur ── */
+    function loadUserData() {
+      const profile = (() => {
+        try { return JSON.parse(localStorage.getItem('yourpass_profile') || 'null'); }
+        catch { return null; }
+      })();
+
+      if (profile) {
+        const name = [profile.firstname, profile.lastname].filter(Boolean).join(' ') || 'Utilisateur';
+        document.getElementById('userName').textContent = name;
+        document.getElementById('userEmail').textContent = profile.email || '—';
+        document.getElementById('profileFirstname').value = profile.firstname || '';
+        document.getElementById('profileLastname').value  = profile.lastname  || '';
+        document.getElementById('profileEmail').value     = profile.email     || '';
+        document.getElementById('profilePhone').value     = profile.phone     || '';
+      }
+    }
+
+    /* ── Calcul des statistiques ── */
+    function loadStats() {
+      const tickets = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key === 'yourpass_ticket' || key.startsWith('yourpass_ticket_'))) {
+          try {
+            const t = JSON.parse(localStorage.getItem(key));
+            if (t) tickets.push(t);
+          } catch {}
+        }
+      }
+
+      const unique = new Set(tickets.map(t => t.orderId)).size;
+      const total  = tickets.reduce((s, t) => s + (Number(t.totalAmount) || 0), 0);
+
+      document.getElementById('statTickets').textContent = tickets.length;
+      document.getElementById('statEvents').textContent  = unique;
+      document.getElementById('statAmount').textContent  = total.toLocaleString('fr-FR');
+    }
+
+    /* ── Sauvegarde du profil ── */
+    function saveProfile(e) {
+      e.preventDefault();
+      const profile = {
+        firstname: document.getElementById('profileFirstname').value,
+        lastname:  document.getElementById('profileLastname').value,
+        email:     document.getElementById('profileEmail').value,
+        phone:     document.getElementById('profilePhone').value
+      };
+      localStorage.setItem('yourpass_profile', JSON.stringify(profile));
+      showNotification('Profil sauvegardé avec succès !', 'success');
+      loadUserData();
+    }
+
+    /* ── Déconnexion ── */
+    function logout() {
+      if (confirm('Voulez-vous vraiment vous déconnecter ?')) {
+        localStorage.removeItem('yourpass_profile');
+        showNotification('Déconnexion réussie', 'info');
+        setTimeout(() => window.location.href = 'connexion.html', 1000);
+      }
+    }
+
+    /* ── Télécharger un billet en PDF ── */
+    function downloadTicketPDF(ticket) {
+      localStorage.setItem('yourpass_ticket', JSON.stringify(ticket));
+      window.open('success.html', '_blank');
+    }
+
+    /* ── INIT ── */
+    document.addEventListener('DOMContentLoaded', () => {
+      loadUserData();
+      loadStats();
+
+      // Override du rendu des billets avec bouton de téléchargement
+      const ticketsContainer = document.getElementById('my-tickets');
+      const tickets = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key === 'yourpass_ticket' || key.startsWith('yourpass_ticket_'))) {
+          try {
+            const t = JSON.parse(localStorage.getItem(key));
+            if (t) tickets.push(t);
+          } catch {}
+        }
+      }
+
+      if (!tickets.length) {
+        ticketsContainer.innerHTML = `
+          <div class="no-tickets">
+            <div class="no-tickets-icon">🎫</div>
+            <h3>Aucun billet pour l'instant</h3>
+            <p>Vos billets achetés apparaîtront ici.</p>
+            <a href="events.html" class="btn-primary" style="width:auto; display:inline-flex;">
+              Voir les événements
+            </a>
+          </div>`;
+      } else {
+        ticketsContainer.innerHTML = tickets.map((t, i) => `
+          <div class="ticket-card reveal">
+            <div class="ticket-left">
+              <div class="ticket-event">${t.eventName || 'Événement'}</div>
+              <div class="ticket-meta">
+                <span>📅 ${t.date || '—'}</span>
+                <span>💰 ${(Number(t.totalAmount) || 0).toLocaleString('fr-FR')} XOF</span>
+              </div>
+              <div class="ticket-id">ID: ${t.orderId || '—'}</div>
+            </div>
+            <div class="ticket-right" style="display:flex; flex-direction:column; align-items:center; gap:0.5rem;">
+              <img class="ticket-qr"
+                   src="https://chart.googleapis.com/chart?chs=80x80&cht=qr&chl=${encodeURIComponent('YourPass:' + (t.orderId || 'N/A'))}"
+                   alt="QR Code">
+              <span class="ticket-status">✅ Valide</span>
+              <button class="btn-secondary" style="padding:.4rem .8rem; font-size:.75rem; width:auto;"
+                      onclick="downloadTicketPDF(${JSON.stringify(t).replace(/"/g, '&quot;')})">
+                📥 PDF
+              </button>
+            </div>
+          </div>
+        `).join('');
+
+        // Initialiser le reveal pour les nouveaux éléments
+        if (typeof ScrollReveal !== 'undefined') {
+          ScrollReveal().reveal('.ticket-card', { interval: 80, origin: 'bottom', distance: '20px' });
+        }
+      }
+    });
+  </script>
+
+</body>
+</html>
