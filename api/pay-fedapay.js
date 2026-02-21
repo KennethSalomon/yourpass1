@@ -1,4 +1,4 @@
-const axios = require('axios');
+import axios from 'axios';
 
 const FEDAPAY_SECRET_KEY = process.env.FEDAPAY_SECRET_KEY;
 const CALLBACK_URL       = process.env.CALLBACK_URL;
@@ -17,22 +17,16 @@ function extractTransaction(data) {
 }
 
 export default async function handler(req, res) {
-  // Gestion du preflight CORS (OPTIONS)
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST')    return res.status(405).json({ error: 'Méthode non autorisée' });
 
   const { amount, phoneNumber, firstname, lastname, email, eventName } = req.body;
 
-  // Validation
   const errors = [];
-  if (!amount || isNaN(amount) || Number(amount) < 100)
-    errors.push('Le montant doit être ≥ 100 XOF.');
-  if (!phoneNumber || phoneNumber.replace(/\D/g, '').length < 8)
-    errors.push('Numéro de téléphone invalide.');
-  if (!firstname || firstname.trim().length < 2)
-    errors.push('Prénom requis.');
-  if (!lastname || lastname.trim().length < 2)
-    errors.push('Nom requis.');
+  if (!amount || isNaN(amount) || Number(amount) < 100) errors.push('Le montant doit être ≥ 100 XOF.');
+  if (!phoneNumber || phoneNumber.replace(/\D/g, '').length < 8) errors.push('Numéro de téléphone invalide.');
+  if (!firstname || firstname.trim().length < 2) errors.push('Prénom requis.');
+  if (!lastname  || lastname.trim().length  < 2) errors.push('Nom requis.');
   if (errors.length > 0) return res.status(400).json({ success: false, errors });
 
   const cleanPhone = phoneNumber.replace(/\D/g, '');
