@@ -207,7 +207,6 @@
          5. Si "pending"   → affiche ticket provisoire + retry dans 5s
          6. Si serveur KO  → fallback ticket provisoire
     ════════════════════════════════════════════════════════════ */
-
     const SERVER_URL =  'https://yourpass-backend.vercel.app';
     let retryCount   = 0;
     const MAX_RETRY  = 10; // max 50 secondes d'attente
