@@ -1,5 +1,5 @@
 /* ================================================================
-   YourPass — profile.js  (version Simple & Efficace)
+   YourPass — profile.js  (version Améliorée v2)
    
    INTÉGRATION sur toutes les pages sauf connexion.html :
    
@@ -36,17 +36,23 @@
     return palette[Math.abs(hash) % palette.length];
   }
 
-  function renderProfileWidget(user) {
-    const navActions = document.querySelector('.nav-actions');
-    if (!navActions) return;
-
-    // Cacher le lien Connexion dans la nav
+  function hideConnexionLink() {
+    // Cacher le lien connexion et dashboard quand l'utilisateur est connecté
     document.querySelectorAll('a.nav-link, a.link').forEach(link => {
-      if ((link.getAttribute('href') || '').includes('connexion')) {
+      const href = link.getAttribute('href') || '';
+      if (href.includes('connexion') || href.includes('dashboard')) {
         const li = link.closest('li');
         if (li) li.style.display = 'none';
       }
     });
+  }
+
+  function renderProfileWidget(user) {
+    const navActions = document.querySelector('.nav-actions');
+    if (!navActions) return;
+
+    // Cacher liens connexion + dashboard quand connecté
+    hideConnexionLink();
 
     document.getElementById('yp-profile-widget')?.remove();
 
@@ -86,6 +92,11 @@
         <a href="events.html" class="yp-item" role="menuitem">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
           Événements
+        </a>
+
+        <a href="dashboard.html" class="yp-item" role="menuitem">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          Mon espace
         </a>
 
         <div class="yp-sep"></div>
