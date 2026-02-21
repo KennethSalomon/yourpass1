@@ -347,7 +347,7 @@ window.processMomoPayment = async () => {
   showNotification('Initialisation du paiement…', 'info', 8000);
 
   try {
-    const res = await fetch('http://localhost:3000/pay-fedapay', {
+    const res = await fetch( 'https://yourpass-backend.vercel.app', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

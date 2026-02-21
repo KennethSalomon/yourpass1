@@ -180,7 +180,7 @@ body.dark-mode .search-input {
     border-color: var(--dark-border);
     color: var(--dark-text);
 }
-
+nn, 
 /* Container */
 .container {
     max-width: 1200px;
@@ -1191,12 +1191,19 @@ body.dark-mode .payment-option {
 
 body.dark-mode .form-group input,
 body.dark-mode .form-group select,
-body.dark-mode .form-group textarea {
+body.dark-mode .form-group textarea
+{
   background: var(--dark-bg);
   border-color: var(--dark-border);
   color: var(--dark-text);
 }
 
+body.dark-mode .contact-details ,
+body.dark-mode .contact-info {
+    color: black;
+    
+    
+}
 body.dark-mode .payment-form {
   background: var(--dark-bg);
 }
@@ -1391,7 +1398,7 @@ body.dark-mode .payment-form {
 .contact-main { padding: var(--spacing-3xl) 0; background: var(--gray-50); }
 .contact-layout { display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-3xl); max-width: 1200px; margin: 0 auto; }
 .contact-form-section { display: flex; flex-direction: column; gap: var(--spacing-xl); }
-.contact-info { background: var(--white); border-radius: var(--radius-xl); padding: var(--spacing-2xl); box-shadow: var(--shadow-md); }
+.contact-info { background: var(--dark-bg); border-radius: var(--radius-xl); padding: var(--spacing-2xl); box-shadow: var(--shadow-md); }
 .contact-methods { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--spacing-lg); }
 .contact-method { display: flex; align-items: center; gap: var(--spacing-md); padding: var(--spacing-lg); background: var(--gray-50); border-radius: var(--radius-lg); transition: var(--transition-fast); }
 .contact-method:hover { background: rgba(28,30,134,.9); color: var(--white); transform: translateY(-2px); }
@@ -1411,20 +1418,12 @@ body.dark-mode .payment-form {
 
 /* ── 1. Lien "Connexion" — toujours visible, style bouton ─── */
 a.nav-link[href="connexion.html"] {
-  background: linear-gradient(135deg, var(--primary-color), #e8966a);
-  color: #fff !important;
+ 
+  color: #91aec9 !important;
   padding: 0.4rem 1.1rem;
-  border-radius: var(--radius-full);
-  font-weight: 600;
-  box-shadow: 0 2px 10px rgba(211,126,93,0.35);
-  transition: all 0.22s ease;
+  
 }
-a.nav-link[href="connexion.html"]:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 18px rgba(211,126,93,0.5);
-  background: linear-gradient(135deg, #e8966a, var(--primary-color));
-  color: #fff !important;
-}
+
 /* Reste visible même quand navbar scrolled */
 .navbar.scrolled a.nav-link[href="connexion.html"] {
   color: #fff !important;
