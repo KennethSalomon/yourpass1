@@ -27,7 +27,6 @@
       padding: 2rem 1rem;
     }
 
-    /* ── Spinner ───────────────────────────────────────────────── */
     #loading-state { text-align: center; }
     .spinner {
       width: 52px; height: 52px;
@@ -39,7 +38,6 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ── Erreur ────────────────────────────────────────────────── */
     #error-state {
       display: none;
       text-align: center;
@@ -53,7 +51,6 @@
     #error-state h2 { color: var(--error); margin-bottom: .75rem; }
     #error-state p  { color: #666; line-height: 1.6; margin-bottom: 1.5rem; }
 
-    /* ── Ticket ────────────────────────────────────────────────── */
     #ticket-state { display: none; flex-direction: column; align-items: center; }
 
     .ticket-container {
@@ -99,7 +96,6 @@
     #qrcode { width: 150px; height: 150px; margin-bottom: 10px; }
     .order-id { font-size: 11px; color: #aaa; font-family: monospace; }
 
-    /* ── Boutons ───────────────────────────────────────────────── */
     .actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
     .btn {
       padding: 13px 22px; border-radius: 12px; border: none;
@@ -114,7 +110,6 @@
     .btn-home:hover { background: #f0f0f0; }
     .btn-retry { background: var(--error); color: white; }
 
-    /* ── Notice en attente ─────────────────────────────────────── */
     .pending-notice {
       background: #fef9e7;
       border: 1px solid #f5a623;
@@ -132,14 +127,12 @@
 </head>
 <body>
 
-  <!-- Chargement -->
   <div id="loading-state">
     <div class="spinner"></div>
     <p style="color:#555; font-size:1rem; font-weight:600;">Vérification du paiement…</p>
     <p style="color:#aaa; font-size:.85rem; margin-top:.5rem;">Ne fermez pas cette page</p>
   </div>
 
-  <!-- Erreur -->
   <div id="error-state">
     <div class="icon">❌</div>
     <h2>Paiement non confirmé</h2>
@@ -150,10 +143,9 @@
     </div>
   </div>
 
-  <!-- Ticket confirmé -->
   <div id="ticket-state">
     <div id="pending-notice" class="pending-notice" style="display:none;">
-      ⏳ Paiement en cours de confirmation par l'opérateur. Cette page se rafraîchira automatiquement.
+      ⏳ Paiement en cours de confirmation. Cette page se rafraîchira automatiquement.
     </div>
 
     <div class="ticket-container" id="ticket-content">
@@ -161,28 +153,11 @@
         <h1>YourPass</h1>
         <span class="status-badge valid" id="statusBadge">✅ TICKET VALIDE</span>
       </div>
-
-      <div class="row">
-        <span class="label">Événement</span>
-        <span class="value" id="eventName">—</span>
-      </div>
-      <div class="row">
-        <span class="label">Catégorie</span>
-        <span class="value" id="ticketType">Standard</span>
-      </div>
-      <div class="row">
-        <span class="label">Montant payé</span>
-        <span class="value" id="amount">—</span>
-      </div>
-      <div class="row">
-        <span class="label">Date d'achat</span>
-        <span class="value" id="date">—</span>
-      </div>
-      <div class="row">
-        <span class="label">Statut</span>
-        <span class="value" id="fedaStatus">—</span>
-      </div>
-
+      <div class="row"><span class="label">Événement</span><span class="value" id="eventName">—</span></div>
+      <div class="row"><span class="label">Catégorie</span><span class="value" id="ticketType">Standard</span></div>
+      <div class="row"><span class="label">Montant payé</span><span class="value" id="amount">—</span></div>
+      <div class="row"><span class="label">Date d'achat</span><span class="value" id="date">—</span></div>
+      <div class="row"><span class="label">Statut</span><span class="value" id="fedaStatus">—</span></div>
       <div class="qr-zone">
         <img id="qrcode" src="" alt="QR Code Ticket">
         <span class="order-id" id="orderNumber">ID: ————</span>
@@ -196,22 +171,11 @@
   </div>
 
   <script>
-    /* ════════════════════════════════════════════════════════════
-       success.html — Vérification RÉELLE du paiement FedaPay
-       
-       Flux :
-         1. Lit "yourpass_pending" (transaction en attente)
-         2. Appelle GET /verify/:id sur le backend
-         3. Si "approved"  → crée le ticket + affiche
-         4. Si "declined"  → affiche erreur
-         5. Si "pending"   → affiche ticket provisoire + retry dans 5s
-         6. Si serveur KO  → fallback ticket provisoire
-    ════════════════════════════════════════════════════════════ */
-    const SERVER_URL =  'https://yourpass-backend.vercel.app';
-    let retryCount   = 0;
-    const MAX_RETRY  = 10; // max 50 secondes d'attente
+    /* ── CORRECTION : /api/verify/:id au lieu de /verify/:id ── */
+    const API_BASE  = '/api';
+    let retryCount  = 0;
+    const MAX_RETRY = 10;
 
-    /* ── Helpers UI ──────────────────────────────────────────── */
     function show(id) {
       ['loading-state', 'error-state', 'ticket-state'].forEach(s => {
         document.getElementById(s).style.display = 'none';
@@ -225,42 +189,28 @@
       show('error-state');
     }
 
-    /* ── Vérification principale ─────────────────────────────── */
     async function verifyPayment() {
-      // 1. Chercher une transaction en attente
       let pending = null;
-      try {
-        pending = JSON.parse(localStorage.getItem('yourpass_pending') || 'null');
-      } catch { /* ignore */ }
+      try { pending = JSON.parse(localStorage.getItem('yourpass_pending') || 'null'); } catch {}
 
-      // Pas de pending → ticket déjà confirmé ?
       if (!pending) {
         let existing = null;
         try { existing = JSON.parse(localStorage.getItem('yourpass_ticket') || 'null'); } catch {}
-        if (existing) {
-          renderTicket(existing);
-          show('ticket-state');
-          return;
-        }
+        if (existing) { renderTicket(existing); show('ticket-state'); return; }
         showError("Aucune transaction en attente. Veuillez recommencer le processus d'achat.");
         return;
       }
 
-      // 2. Vérifier via le backend
       try {
-        const res = await fetch(`${SERVER_URL}/verify/${pending.transaction_id}`);
-
+        // ✅ CORRECTION : /api/verify/:id
+        const res  = await fetch(`${API_BASE}/verify/${pending.transaction_id}`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
-
-        if (!data.success || !data.transaction) {
-          throw new Error(data.error || 'Réponse inattendue du serveur');
-        }
+        if (!data.success || !data.transaction) throw new Error(data.error || 'Réponse inattendue');
 
         const status = data.transaction.status;
 
         if (status === 'approved') {
-          // ✅ Paiement confirmé par FedaPay → créer le vrai ticket
           const ticket = {
             eventName:   pending.eventName,
             ticketType:  pending.ticketType || 'Standard',
@@ -269,37 +219,29 @@
             date:        new Date().toLocaleString('fr-FR'),
             fedaStatus:  'Approuvé ✅'
           };
-          // Sauvegarder définitivement
           localStorage.setItem('yourpass_ticket', JSON.stringify(ticket));
           localStorage.setItem(`yourpass_ticket_${ticket.orderId}`, JSON.stringify(ticket));
-          // Supprimer le pending
           localStorage.removeItem('yourpass_pending');
-
           renderTicket(ticket);
           document.getElementById('pending-notice').style.display = 'none';
           show('ticket-state');
 
         } else if (status === 'declined') {
           localStorage.removeItem('yourpass_pending');
-          showError("Votre paiement a été refusé par l'opérateur Mobile Money. Aucun montant ne vous a été débité. Veuillez réessayer avec un autre numéro ou une autre méthode.");
-
+          showError("Votre paiement a été refusé. Aucun montant n'a été débité. Réessayez avec un autre numéro.");
         } else if (status === 'canceled') {
           localStorage.removeItem('yourpass_pending');
-          showError("Le paiement a été annulé. Aucun prélèvement n'a été effectué.");
-
+          showError("Le paiement a été annulé.");
         } else {
-          // Statut "pending" — FedaPay attend la confirmation de l'opérateur
           showPendingTicket(pending);
         }
 
       } catch (err) {
-        console.warn('[YourPass] Vérification échouée:', err.message);
-        // Serveur injoignable → afficher ticket provisoire, réessayer
+        console.warn('[YourPass] Vérification:', err.message);
         showPendingTicket(pending);
       }
     }
 
-    /* ── Ticket "en attente" avec auto-refresh ───────────────── */
     function showPendingTicket(pending) {
       const ticket = {
         eventName:   pending.eventName,
@@ -309,52 +251,42 @@
         date:        new Date().toLocaleString('fr-FR'),
         fedaStatus:  'En attente ⏳'
       };
-
       document.getElementById('statusBadge').textContent = '⏳ EN ATTENTE';
       document.getElementById('statusBadge').className   = 'status-badge pending';
       document.getElementById('pending-notice').style.display = 'block';
-
       renderTicket(ticket);
       show('ticket-state');
-
-      // Réessayer toutes les 5 secondes (max 10 fois = 50s)
       if (retryCount < MAX_RETRY) {
         retryCount++;
         setTimeout(verifyPayment, 5000);
       } else {
         document.getElementById('pending-notice').textContent =
-          '⚠️ La confirmation prend plus de temps que prévu. Vérifiez votre téléphone pour approuver le paiement.';
+          '⚠️ La confirmation prend du temps. Vérifiez votre téléphone pour approuver le paiement.';
       }
     }
 
-    /* ── Remplir le ticket ───────────────────────────────────── */
     function renderTicket(ticket) {
-      document.getElementById('eventName').textContent  = ticket.eventName   || '—';
-      document.getElementById('ticketType').textContent = ticket.ticketType  || 'Standard';
-      document.getElementById('amount').textContent     =
-        Number(ticket.totalAmount).toLocaleString('fr-FR') + ' XOF';
-      document.getElementById('date').textContent       = ticket.date        || '—';
-      document.getElementById('fedaStatus').textContent = ticket.fedaStatus  || '—';
+      document.getElementById('eventName').textContent   = ticket.eventName   || '—';
+      document.getElementById('ticketType').textContent  = ticket.ticketType  || 'Standard';
+      document.getElementById('amount').textContent      = Number(ticket.totalAmount).toLocaleString('fr-FR') + ' XOF';
+      document.getElementById('date').textContent        = ticket.date        || '—';
+      document.getElementById('fedaStatus').textContent  = ticket.fedaStatus  || '—';
       document.getElementById('orderNumber').textContent = 'ID: ' + (ticket.orderId || '—');
-
       const qrData = encodeURIComponent('YourPass-Ticket:' + ticket.orderId);
       document.getElementById('qrcode').src =
         `https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl=${qrData}&choe=UTF-8`;
     }
 
-    /* ── Téléchargement PDF ──────────────────────────────────── */
     function downloadPDF() {
       const orderId = document.getElementById('orderNumber').textContent.replace('ID: ', '');
       html2pdf().set({
-        margin:     0.5,
-        filename:   `YourPass_Ticket_${orderId}.pdf`,
-        image:      { type: 'jpeg', quality: 1 },
+        margin: 0.5, filename: `YourPass_Ticket_${orderId}.pdf`,
+        image: { type: 'jpeg', quality: 1 },
         html2canvas: { scale: 3, useCORS: true },
-        jsPDF:      { unit: 'in', format: 'a4', orientation: 'portrait' }
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
       }).from(document.getElementById('ticket-content')).save();
     }
 
-    /* ── Lancer la vérification dès le chargement ────────────── */
     verifyPayment();
   </script>
 </body>

@@ -1,15 +1,19 @@
 /* ================================================================
-   YourPass — main.js  v2.1 (CORRIGÉ)
+   YourPass — main.js  v2.2 (CORRIGÉ VERCEL)
    
-   CORRECTION CRITIQUE :
-   processMomoPayment() stocke maintenant "yourpass_pending"
-   (transaction en attente) AVANT redirection FedaPay.
-   success.html appelle /verify/:id pour confirmer le paiement.
-   Le ticket "yourpass_ticket" n'est créé QUE si le paiement
-   est réellement approuvé par FedaPay.
+   CORRECTIONS :
+   - processMomoPayment() appelle maintenant /api/pay-fedapay
+   - success.html vérifie via /api/verify/:id
+   - Plus de référence à yourpass-backend.vercel.app
 ================================================================ */
 
 'use strict';
+
+/* ────────────────────────────────────────────────────────────────
+   CONFIGURATION — URL de base de l'API
+   Sur Vercel : tout est sur le même domaine, on utilise /api/
+──────────────────────────────────────────────────────────────── */
+const API_BASE = '/api';
 
 /* ────────────────────────────────────────────────────────────────
    1. TOAST NOTIFICATIONS
@@ -91,7 +95,6 @@ function initNavigation() {
   const navLinks   = document.querySelectorAll('.nav-link');
   const indicator  = document.querySelector('.nav-indicator');
 
-  // Active link automatique basé sur la page courante
   const currentPage = window.location.pathname.split('/').pop() || 'index.html';
   navLinks.forEach(link => {
     const href = link.getAttribute('href');
@@ -100,7 +103,6 @@ function initNavigation() {
     );
   });
 
-  // Menu mobile
   if (menuToggle && navMenu) {
     menuToggle.addEventListener('click', () => {
       const isOpen = navMenu.classList.toggle('active');
@@ -118,7 +120,6 @@ function initNavigation() {
     }));
   }
 
-  // Indicateur glissant
   if (indicator && navMenu && navLinks.length > 0) {
     const moveIndicator = (link) => {
       const lr = link.getBoundingClientRect();
@@ -267,24 +268,7 @@ function initNewsletter() {
 }
 
 /* ────────────────────────────────────────────────────────────────
-   9. PAIEMENT
-   
-   FLUX SÉCURISÉ :
-   
-   ① goToPayment()
-      → sauvegarde selectedEvent → redirige paiement.html
-      
-   ② processMomoPayment()  [CORRIGÉ]
-      → appelle POST /pay-fedapay
-      → reçoit { url, transaction_id }
-      → stocke "yourpass_pending" (PENDING, pas encore approuvé)
-      → redirige vers l'URL FedaPay
-      
-   ③ success.html
-      → lit "yourpass_pending"
-      → appelle GET /verify/:id → vérifie le vrai statut
-      → si "approved" → crée "yourpass_ticket" et affiche le ticket
-      → sinon → affiche une erreur claire
+   9. PAIEMENT — CORRIGÉ : appels vers /api/
 ──────────────────────────────────────────────────────────────── */
 
 window.goToPayment = (id, name, price, ticketType, quantity = 1) => {
@@ -292,14 +276,14 @@ window.goToPayment = (id, name, price, ticketType, quantity = 1) => {
     const event = window.getEventById ? window.getEventById(id) : null;
     localStorage.setItem('selectedEvent', JSON.stringify({
       id, name,
-      price:     price || (event ? event.price : 0),
-      vipPrice:  event ? event.vipPrice : 0,
+      price:      price || (event ? event.price : 0),
+      vipPrice:   event ? event.vipPrice : 0,
       ticketType: ticketType || 'standard',
       quantity,
-      date:      event ? event.date : new Date().toISOString(),
-      venue:     event ? event.venue : '',
-      location:  event ? event.location : '',
-      time:      event ? event.time : '',
+      date:       event ? event.date : new Date().toISOString(),
+      venue:      event ? event.venue : '',
+      location:   event ? event.location : '',
+      time:       event ? event.time : '',
       selectedAt: new Date().toISOString()
     }));
     window.location.href = 'paiement.html';
@@ -308,14 +292,14 @@ window.goToPayment = (id, name, price, ticketType, quantity = 1) => {
   }
 };
 
-/* ─── processMomoPayment — CORRIGÉ ──────────────────────────── */
+/* ─── processMomoPayment — URL CORRIGÉE ─────────────────────── */
 window.processMomoPayment = async () => {
   const phoneInput = document.getElementById('phone');
-  const nameInput  = document.querySelector('#momo-form input[type="text"]');
-  const emailInput = document.querySelector('#momo-form input[type="email"]');
-  const payBtn     = document.querySelector('#momo-form .btn-primary');
+  const nameInput  = document.getElementById('momo-name');
+  const emailInput = document.getElementById('momo-email');
+  const payBtn     = document.getElementById('momo-pay-btn') ||
+                     document.querySelector('#momo-form .btn-primary');
 
-  // Validation
   const phone = (phoneInput?.value || '').trim();
   if (phone.replace(/\D/g, '').length < 8) {
     showNotification('Numéro de téléphone invalide (minimum 8 chiffres).', 'error');
@@ -323,13 +307,11 @@ window.processMomoPayment = async () => {
     return;
   }
 
-  // Données de l'événement
   const eventData = (() => {
     try { return JSON.parse(localStorage.getItem('selectedEvent') || '{}'); }
     catch { return {}; }
   })();
 
-  // Calcul du total (5% de frais, cohérent avec paiement.html)
   const amount    = (typeof calculateTotal === 'function')
     ? calculateTotal()
     : ((eventData.price || 5000) + 250);
@@ -337,18 +319,20 @@ window.processMomoPayment = async () => {
   const eventName = document.getElementById('event-name')?.textContent?.trim()
                  || eventData.name
                  || 'Événement YourPass';
-  const parts = (nameInput?.value || '').trim().split(' ');
 
-  // UI loading
+  const fullName = (nameInput?.value || '').trim();
+  const parts    = fullName.split(/\s+/);
+
   if (payBtn) {
-    payBtn.disabled = true;
-    payBtn.innerHTML = '⏳ Traitement…';
+    payBtn.disabled     = true;
+    payBtn.innerHTML    = '⏳ Traitement…';
   }
   showNotification('Initialisation du paiement…', 'info', 8000);
 
   try {
-    const res = await fetch( 'https://yourpass-backend.vercel.app', {
-      method: 'POST',
+    // ✅ CORRECTION : on appelle /api/pay-fedapay (même domaine Vercel)
+    const res = await fetch(`${API_BASE}/pay-fedapay`, {
+      method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         amount,
@@ -366,17 +350,10 @@ window.processMomoPayment = async () => {
     }
 
     const result = await res.json();
-
     if (!result.success || !result.url) {
       throw new Error(result.error || result.errors?.join(', ') || 'Réponse invalide du serveur');
     }
 
-    /* ─────────────────────────────────────────────────────────────
-       ✅ CORRECTION CRITIQUE
-       On stocke la transaction PENDING (pas un ticket confirmé).
-       success.html appellera /verify/:id pour vérifier l'approbation.
-       Le ticket ne sera créé que si FedaPay confirme le paiement.
-    ───────────────────────────────────────────────────────────── */
     localStorage.setItem('yourpass_pending', JSON.stringify({
       transaction_id: result.transaction_id,
       eventName,
@@ -392,12 +369,12 @@ window.processMomoPayment = async () => {
     console.error('[YourPass] Paiement:', err);
     let msg = err.message;
     if (msg.includes('fetch') || msg.includes('Failed') || msg.includes('NetworkError')) {
-      msg = '🔴 Serveur introuvable. Vérifiez que "node server.js" est lancé.';
+      msg = '🔴 Impossible de contacter le serveur de paiement.';
     }
     showNotification(msg, 'error', 7000);
     if (payBtn) {
       payBtn.disabled  = false;
-      payBtn.innerHTML = 'Payer avec Mobile Money';
+      payBtn.innerHTML = '📱 Payer avec Mobile Money';
     }
   }
 };
