@@ -180,7 +180,7 @@ body.dark-mode .search-input {
     border-color: var(--dark-border);
     color: var(--dark-text);
 }
-nn, 
+
 /* Container */
 .container {
     max-width: 1200px;
@@ -1418,11 +1418,12 @@ body.dark-mode .payment-form {
 
 /* ── 1. Lien "Connexion" — toujours visible, style bouton ─── */
 a.nav-link[href="connexion.html"] {
- 
-  color: #91aec9 !important;
-  padding: 0.4rem 1.1rem;
   
+  position:relative;
+  padding: 0.4rem 1.1rem;
+  transition: color .4s;
 }
+
 
 /* Reste visible même quand navbar scrolled */
 .navbar.scrolled a.nav-link[href="connexion.html"] {
