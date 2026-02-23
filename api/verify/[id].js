@@ -6,6 +6,8 @@ const fedapay = axios.create({
   timeout: 20000
 });
 
+
+
 function extractTransaction(data) {
   if (data?.v1?.transaction) return data.v1.transaction;
   if (data?.transaction)     return data.transaction;

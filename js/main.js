@@ -9,7 +9,7 @@
 
 'use strict';
 
-/* ────────────────────────────────────────────────────────────────
+/* ────────────────
    CONFIGURATION — URL de base de l'API
    Sur Vercel : tout est sur le même domaine, on utilise'https://yourpass-backend.vercel.app/api';
 ──────────────────────────────────────────────────────────────── */
