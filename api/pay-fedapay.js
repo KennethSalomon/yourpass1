@@ -1,13 +1,14 @@
 import axios from 'axios';
 
+import axios from 'axios';
+
 /* ════════════════════════════════════════════════════════════════
-   YourPass — api/pay-fedapay.js  (version CORRIGÉE Vercel)
+   YourPass — api/pay-fedapay.js  (version CORRIGÉE v2)
    
    CORRECTIONS :
-   1. Body parser manuel (Vercel ESM ne parse pas automatiquement)
-   2. Validation robuste + fallback lastname
-   3. Gestion erreurs FedaPay détaillée
-   4. CALLBACK_URL avec fallback automatique
+   1. Body parser robuste (gère ESM Vercel en production)
+   2. extractTransaction() corrigé pour la vraie structure FedaPay
+   3. extractPaymentUrl() corrigé pour le token
 ════════════════════════════════════════════════════════════════ */
 
 const FEDAPAY_SECRET_KEY = process.env.FEDAPAY_SECRET_KEY;
@@ -23,108 +24,109 @@ const fedapay = axios.create({
   timeout: 25000
 });
 
-/* ── Helpers ─────────────────────────────────────────────────── */
-function extractTransaction(data) {
-  if (data?.v1?.transaction) return data.v1.transaction;
-  if (data?.transaction)     return data.transaction;
-  if (data?.id)              return data;
+/* ── Extraction robuste du transaction ID ────────────────────── */
+function extractTransactionId(data) {
+  // Structure 1 : { v1: { transaction: { id: ... } } }
+  if (data?.v1?.transaction?.id) return data.v1.transaction.id;
+  // Structure 2 : { transaction: { id: ... } }
+  if (data?.transaction?.id)     return data.transaction.id;
+  // Structure 3 : { id: ... } directement
+  if (data?.id)                  return data.id;
+  // Structure 4 : tableau
+  if (Array.isArray(data) && data[0]?.id) return data[0].id;
+
+  console.error('[FedaPay] Structure TX inconnue:', JSON.stringify(data).slice(0, 300));
   return null;
 }
 
-/**
- * Vercel ESM Serverless Functions ne parsent PAS automatiquement le body.
- * Cette fonction lit le stream brut et parse le JSON manuellement.
- */
+/* ── Extraction robuste de l'URL de paiement ─────────────────── */
+function extractPaymentUrl(data) {
+  // Structure 1 : { url: "..." }
+  if (data?.url) return data.url;
+  // Structure 2 : { token: { url: "..." } }
+  if (data?.token?.url) return data.token.url;
+  // Structure 3 : { v1: { token: { url: "..." } } }
+  if (data?.v1?.token?.url) return data.v1.token.url;
+  // Structure 4 : { v1: { url: "..." } }
+  if (data?.v1?.url) return data.v1.url;
+
+  console.error('[FedaPay] Structure URL inconnue:', JSON.stringify(data).slice(0, 300));
+  return null;
+}
+
+/* ── Body parser robuste ─────────────────────────────────────── */
 function parseBody(req) {
-  return new Promise((resolve, reject) => {
-    // Si déjà parsé (parfois Vercel le fait en CommonJS)
-    if (req.body && typeof req.body === 'object') {
+  return new Promise((resolve) => {
+    // Cas 1 : déjà parsé (Vercel CommonJS ou middleware)
+    if (req.body && typeof req.body === 'object' && Object.keys(req.body).length > 0) {
       resolve(req.body);
       return;
     }
 
+    // Cas 2 : body est une string JSON
+    if (req.body && typeof req.body === 'string') {
+      try { resolve(JSON.parse(req.body)); return; }
+      catch { resolve({}); return; }
+    }
+
+    // Cas 3 : lire le stream (ESM Vercel en production)
     let raw = '';
-    req.on('data', chunk => { raw += chunk; });
+    req.on('data', chunk => { raw += chunk.toString(); });
     req.on('end', () => {
-      try {
-        resolve(raw ? JSON.parse(raw) : {});
-      } catch {
-        resolve({});
-      }
+      try { resolve(raw ? JSON.parse(raw) : {}); }
+      catch { resolve({}); }
     });
-    req.on('error', reject);
+    req.on('error', () => resolve({}));
   });
 }
 
 /* ── Handler principal ───────────────────────────────────────── */
 export default async function handler(req, res) {
-  // CORS preflight
-  if (req.method === 'OPTIONS') {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    return res.status(200).end();
-  }
+  // CORS
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Méthode non autorisée' });
-  }
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST')    return res.status(405).json({ error: 'Méthode non autorisée' });
 
   /* ── Vérification clé API ─────────────────────────────────── */
   if (!FEDAPAY_SECRET_KEY) {
-    console.error('[YourPass] FEDAPAY_SECRET_KEY manquante dans les variables d\'environnement');
-    return res.status(500).json({
-      success: false,
-      error: 'Configuration serveur incomplète. Contactez le support.'
-    });
+    console.error('[YourPass] FEDAPAY_SECRET_KEY manquante');
+    return res.status(500).json({ success: false, error: 'Configuration serveur incomplète.' });
   }
 
-  /* ── Parse body (CORRECTION PRINCIPALE) ──────────────────── */
+  /* ── Parse body ───────────────────────────────────────────── */
   let body;
-  try {
-    body = await parseBody(req);
-  } catch (parseErr) {
-    console.error('[YourPass] Erreur parse body:', parseErr);
-    return res.status(400).json({ success: false, error: 'Corps de requête invalide.' });
-  }
+  try { body = await parseBody(req); }
+  catch { return res.status(400).json({ success: false, error: 'Corps de requête invalide.' }); }
+
+  console.log('[YourPass] Body reçu:', JSON.stringify(body));
 
   const { amount, phoneNumber, firstname, lastname, email, eventName } = body;
 
-  console.log('[YourPass] Paiement reçu:', {
-    amount, phoneNumber: phoneNumber?.replace(/\d(?=\d{4})/g, '*'),
-    firstname, eventName,
-    mode: FEDAPAY_SECRET_KEY.startsWith('sk_live_') ? 'PRODUCTION' : 'SANDBOX'
-  });
-
-  /* ── Validation des champs ────────────────────────────────── */
+  /* ── Validation ───────────────────────────────────────────── */
   const errors = [];
   if (!amount || isNaN(amount) || Number(amount) < 100)
     errors.push('Le montant doit être ≥ 100 XOF.');
   if (!phoneNumber || phoneNumber.replace(/\D/g, '').length < 8)
-    errors.push('Numéro de téléphone invalide (minimum 8 chiffres).');
+    errors.push('Numéro de téléphone invalide.');
   if (!firstname || firstname.trim().length < 2)
-    errors.push('Prénom requis (minimum 2 caractères).');
+    errors.push('Prénom requis.');
 
-  if (errors.length > 0) {
+  if (errors.length > 0)
     return res.status(400).json({ success: false, errors });
-  }
 
-  /* ── Préparation des données ──────────────────────────────── */
-  const cleanPhone  = phoneNumber.replace(/\D/g, '');
-  const amountInt   = Math.round(Number(amount));
-  const cleanFirst  = firstname.trim();
-  // CORRECTION : lastname ne peut pas être vide pour FedaPay
-  const cleanLast   = (lastname && lastname.trim().length >= 1)
-    ? lastname.trim()
-    : cleanFirst; // si pas de nom, on duplique le prénom
+  /* ── Préparation ──────────────────────────────────────────── */
+  const cleanPhone = phoneNumber.replace(/\D/g, '');
+  const amountInt  = Math.round(Number(amount));
+  const cleanFirst = firstname.trim();
+  const cleanLast  = (lastname && lastname.trim()) ? lastname.trim() : cleanFirst;
 
-  /* ── Création de la transaction FedaPay ──────────────────── */
+  /* ── Étape 1 : Créer la transaction ──────────────────────── */
+  let txId;
   try {
-    console.log('[YourPass] Création transaction FedaPay...', {
-      amount: amountInt,
-      phone: cleanPhone,
-      callback: CALLBACK_URL
-    });
+    console.log('[YourPass] Création transaction...', { amountInt, cleanPhone });
 
     const txResponse = await fedapay.post('/transactions', {
       amount:       amountInt,
@@ -135,39 +137,55 @@ export default async function handler(req, res) {
         firstname:    cleanFirst,
         lastname:     cleanLast,
         email:        (email && email.trim()) ? email.trim() : undefined,
-        phone_number: {
-          number:  cleanPhone,
-          country: 'BJ'
-        }
+        phone_number: { number: cleanPhone, country: 'BJ' }
       }
     });
 
-    const transaction = extractTransaction(txResponse.data);
-    const txId        = transaction?.id;
+    console.log('[YourPass] Réponse TX brute:', JSON.stringify(txResponse.data).slice(0, 500));
+
+    txId = extractTransactionId(txResponse.data);
 
     if (!txId) {
-      console.error('[YourPass] Transaction ID introuvable. Réponse FedaPay:', JSON.stringify(txResponse.data));
-      throw new Error('ID de transaction introuvable dans la réponse FedaPay.');
+      return res.status(500).json({
+        success: false,
+        error: 'Impossible d\'obtenir l\'ID de transaction FedaPay.',
+        debug: JSON.stringify(txResponse.data).slice(0, 200)
+      });
     }
 
-    console.log('[YourPass] Transaction créée, ID:', txId, '— Génération du token...');
+    console.log('[YourPass] TX créée, ID:', txId);
 
-    /* ── Génération du token de paiement ──────────────────── */
+  } catch (err) {
+    const status = err.response?.status || 500;
+    const msg    = err.response?.data?.message || err.message;
+    console.error('[YourPass] Erreur création TX:', status, msg);
+
+    let userMsg = 'Erreur lors de la création du paiement.';
+    if (status === 401) userMsg = 'Clé API FedaPay invalide.';
+    if (status === 422) userMsg = `Données invalides : ${msg}`;
+
+    return res.status(status).json({ success: false, error: userMsg });
+  }
+
+  /* ── Étape 2 : Générer le token de paiement ──────────────── */
+  try {
+    console.log('[YourPass] Génération token pour TX:', txId);
+
     const tokenResponse = await fedapay.post(`/transactions/${txId}/token`);
 
-    // FedaPay peut retourner l'URL sous différentes structures
-    const paymentUrl =
-      tokenResponse.data?.url ||
-      tokenResponse.data?.token?.url ||
-      tokenResponse.data?.v1?.token?.url ||
-      tokenResponse.data?.v1?.url;
+    console.log('[YourPass] Réponse token brute:', JSON.stringify(tokenResponse.data).slice(0, 500));
+
+    const paymentUrl = extractPaymentUrl(tokenResponse.data);
 
     if (!paymentUrl) {
-      console.error('[YourPass] URL de paiement introuvable. Réponse token:', JSON.stringify(tokenResponse.data));
-      throw new Error('URL de paiement introuvable dans la réponse FedaPay.');
+      return res.status(500).json({
+        success: false,
+        error: 'URL de paiement introuvable.',
+        debug: JSON.stringify(tokenResponse.data).slice(0, 200)
+      });
     }
 
-    console.log('[YourPass] ✅ Succès — TX ID:', txId, '| URL générée');
+    console.log('[YourPass] ✅ Succès — TX:', txId, '| URL:', paymentUrl.slice(0, 60));
 
     return res.status(200).json({
       success:        true,
@@ -176,28 +194,13 @@ export default async function handler(req, res) {
     });
 
   } catch (err) {
-    const status       = err.response?.status || 500;
-    const fedaData     = err.response?.data;
-    const fedaMessage  = fedaData?.message
-                      || fedaData?.errors?.[0]?.message
-                      || fedaData?.error
-                      || err.message;
+    const status = err.response?.status || 500;
+    const msg    = err.response?.data?.message || err.message;
+    console.error('[YourPass] Erreur token:', status, msg);
 
-    console.error('[YourPass] Erreur FedaPay:', {
-      status,
-      message: fedaMessage,
-      data: JSON.stringify(fedaData || {}).slice(0, 500)
-    });
-
-    let userMessage = 'Erreur lors de la création du paiement.';
-    if (status === 401)           userMessage = 'Clé API FedaPay invalide ou expirée.';
-    else if (status === 422)      userMessage = `Données invalides : ${fedaMessage}`;
-    else if (status === 429)      userMessage = 'Trop de requêtes. Réessayez dans un instant.';
-    else if (fedaMessage)         userMessage = fedaMessage;
-
-    return res.status(status >= 400 && status < 600 ? status : 500).json({
+    return res.status(500).json({
       success: false,
-      error:   userMessage
+      error: `Erreur génération token : ${msg}`
     });
   }
 }
