@@ -22,29 +22,27 @@ const fedapay = axios.create({
   timeout: 25000
 });
 
+/* ── Extraction robuste du transaction ID ────────────────────── */
 function extractTransactionId(data) {
-  console.log('[DEBUG] Keys:', Object.keys(data));
-  console.log('[DEBUG] data.v1:', JSON.stringify(data.v1).slice(0,100));
-  
-  if (data?.v1?.transaction?.id) return data.v1.transaction.id;
-  if (data?.transaction?.id)     return data.transaction.id;
-  if (data?.id)                  return data.id;
+  // Structure réelle FedaPay : { "v1/transaction": { id: ... } }
+  if (data?.['v1/transaction']?.id) return data['v1/transaction'].id;
+  // Fallbacks
+  if (data?.v1?.transaction?.id)    return data.v1.transaction.id;
+  if (data?.transaction?.id)        return data.transaction.id;
+  if (data?.id)                     return data.id;
   if (Array.isArray(data) && data[0]?.id) return data[0].id;
+
+  console.error('[FedaPay] Structure TX inconnue:', JSON.stringify(data).slice(0, 300));
   return null;
 }
 
-
-
 /* ── Extraction robuste de l'URL de paiement ─────────────────── */
 function extractPaymentUrl(data) {
-  // Structure 1 : { url: "..." }
-  if (data?.url) return data.url;
-  // Structure 2 : { token: { url: "..." } }
-  if (data?.token?.url) return data.token.url;
-  // Structure 3 : { v1: { token: { url: "..." } } }
-  if (data?.v1?.token?.url) return data.v1.token.url;
-  // Structure 4 : { v1: { url: "..." } }
-  if (data?.v1?.url) return data.v1.url;
+  if (data?.url)               return data.url;
+  if (data?.token?.url)        return data.token.url;
+  if (data?.['v1/token']?.url) return data['v1/token'].url;
+  if (data?.v1?.token?.url)    return data.v1.token.url;
+  if (data?.v1?.url)           return data.v1.url;
 
   console.error('[FedaPay] Structure URL inconnue:', JSON.stringify(data).slice(0, 300));
   return null;
