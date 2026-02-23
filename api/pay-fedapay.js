@@ -22,20 +22,18 @@ const fedapay = axios.create({
   timeout: 25000
 });
 
-/* ── Extraction robuste du transaction ID ────────────────────── */
 function extractTransactionId(data) {
-  // Structure 1 : { v1: { transaction: { id: ... } } }
+  console.log('[DEBUG] Keys:', Object.keys(data));
+  console.log('[DEBUG] data.v1:', JSON.stringify(data.v1).slice(0,100));
+  
   if (data?.v1?.transaction?.id) return data.v1.transaction.id;
-  // Structure 2 : { transaction: { id: ... } }
   if (data?.transaction?.id)     return data.transaction.id;
-  // Structure 3 : { id: ... } directement
   if (data?.id)                  return data.id;
-  // Structure 4 : tableau
   if (Array.isArray(data) && data[0]?.id) return data[0].id;
-
-  console.error('[FedaPay] Structure TX inconnue:', JSON.stringify(data).slice(0, 300));
   return null;
 }
+
+
 
 /* ── Extraction robuste de l'URL de paiement ─────────────────── */
 function extractPaymentUrl(data) {
