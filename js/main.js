@@ -1,17 +1,16 @@
 /* ================================================================
-   YourPass — main.js  v2.2 (CORRIGÉ VERCEL)
+   YourPass — main.js  v2.3 (CORRIGÉ — PAIEMENT OK)
    
    CORRECTIONS :
-   - processMomoPayment() appelle maintenant /api/pay-fedapay
+   - API_BASE = 'https://yourpass1.vercel.app/api' (sans /health)
+   - processMomoPayment() appelle ${API_BASE}/pay-fedapay
    - success.html vérifie via /api/verify/:id
-   - Plus de référence à yourpass-backend.vercel.app
 ================================================================ */
 
 'use strict';
 
-/* ────────────────
+/* ────────────────────────────────────────────────────────────────
    CONFIGURATION — URL de base de l'API
-   Sur Vercel : tout est sur le même domaine, on utilise'https://yourpass-backend.vercel.app/api';
 ──────────────────────────────────────────────────────────────── */
 const API_BASE = 'https://yourpass1.vercel.app/api';
 
@@ -268,7 +267,7 @@ function initNewsletter() {
 }
 
 /* ────────────────────────────────────────────────────────────────
-   9. PAIEMENT — CORRIGÉ : appels vers /api/
+   9. PAIEMENT
 ──────────────────────────────────────────────────────────────── */
 
 window.goToPayment = (id, name, price, ticketType, quantity = 1) => {
@@ -292,7 +291,7 @@ window.goToPayment = (id, name, price, ticketType, quantity = 1) => {
   }
 };
 
-/* ─── processMomoPayment — URL CORRIGÉE ─────────────────────── */
+/* ─── processMomoPayment ─────────────────────────────────────── */
 window.processMomoPayment = async () => {
   const phoneInput = document.getElementById('phone');
   const nameInput  = document.getElementById('momo-name');
@@ -312,9 +311,9 @@ window.processMomoPayment = async () => {
     catch { return {}; }
   })();
 
-  const amount    = (typeof calculateTotal === 'function')
+  const amount = (typeof calculateTotal === 'function')
     ? calculateTotal()
-    : ((eventData.price || 5000) + 250);
+    : ((eventData.price || 5000) + Math.round((eventData.price || 5000) * 0.05));
 
   const eventName = document.getElementById('event-name')?.textContent?.trim()
                  || eventData.name
@@ -324,13 +323,13 @@ window.processMomoPayment = async () => {
   const parts    = fullName.split(/\s+/);
 
   if (payBtn) {
-    payBtn.disabled     = true;
-    payBtn.innerHTML    = '⏳ Traitement…';
+    payBtn.disabled  = true;
+    payBtn.innerHTML = '⏳ Traitement…';
   }
   showNotification('Initialisation du paiement…', 'info', 8000);
 
   try {
-    // ✅ CORRECTION : on appelle /api/pay-fedapay (même domaine Vercel)
+    // ✅ URL CORRECTE : /api/pay-fedapay (sans /health)
     const res = await fetch(`${API_BASE}/pay-fedapay`, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -368,8 +367,8 @@ window.processMomoPayment = async () => {
   } catch (err) {
     console.error('[YourPass] Paiement:', err);
     let msg = err.message;
-    if (msg.includes('fetch') || msg.includes('Failed') || msg.includes('NetworkError')) {
-      msg = '🔴 Impossible de contacter le serveur de paiement.';
+    if (msg.includes('fetch') || msg.includes('Failed') || msg.includes('NetworkError') || msg.includes('CORS')) {
+      msg = '🔴 Impossible de contacter le serveur de paiement. Vérifiez votre connexion.';
     }
     showNotification(msg, 'error', 7000);
     if (payBtn) {
