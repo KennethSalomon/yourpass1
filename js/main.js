@@ -13,7 +13,7 @@
    CONFIGURATION — URL de base de l'API
    Sur Vercel : tout est sur le même domaine, on utilise /api/
 ──────────────────────────────────────────────────────────────── */
-const API_BASE = '/api';
+const API_BASE = 'https://yourpass1.vercel.app/api/health';
 
 /* ────────────────────────────────────────────────────────────────
    1. TOAST NOTIFICATIONS
