@@ -66,6 +66,7 @@
           <img src="image video/téléchargement (1).png" alt="YourPass Logo">
         </div>
       </div>
+      <br><br>
       <div class="nav-menu" id="navMenu">
         <ul>
           <li><a href="index.html"     class="link">Accueil</a></li>
@@ -293,7 +294,7 @@ _sb.auth.onAuthStateChange((event, session) => {
 
     // Délai court pour que le message "Connexion réussie" soit visible
     setTimeout(() => {
-      window.location.href = window.location.origin + '/index.html';
+      window.location.href = window.location.origin + 'index.html';
     }, 700);
 
   } else if (event === 'INITIAL_SESSION' && !session) {
@@ -382,7 +383,7 @@ document.getElementById('reg-submit').addEventListener('click', async () => {
     password,
     options: {
       data: { firstname, lastname },
-      emailRedirectTo: window.location.origin + '/connexion.html'
+      emailRedirectTo: window.location.origin + 'connexion.html'
     }
   });
 

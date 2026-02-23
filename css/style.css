@@ -19,7 +19,7 @@
 /* CSS Variables - Design System */
 :root {
     /* Primary Colors - Afro-Modern Palette */
-    --primary-color: #d37e5d;
+    --primary-color: #4f46e5;
     --primary-dark: #e55555;
     --primary-light: #ff8787;
     --secondary-color: #fff;
@@ -1361,7 +1361,6 @@ body.dark-mode .payment-form {
 
 /* ── PAIEMENT ─────────────────────────────────────────────────── */
 .payment-header { padding: 120px 0 var(--spacing-xl); background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: var(--white); position: relative; }
-.payment-header::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, rgba(255,107,107,.9), rgba(99,102,241,.9)); z-index: 1; }
 .payment-header > .container { position: relative; z-index: 2; }
 .payment-breadcrumb { margin-bottom: var(--spacing-md); font-size: var(--font-size-sm); }
 .payment-breadcrumb a { color: var(--white); text-decoration: none; opacity: .8; }
@@ -1390,7 +1389,7 @@ body.dark-mode .payment-form {
 .payment-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--spacing-md); padding: var(--spacing-lg); border-bottom: 1px solid var(--gray-200); }
 .payment-option { display: flex; align-items: center; gap: var(--spacing-md); padding: var(--spacing-md); background: var(--gray-50); border: 2px solid transparent; border-radius: var(--radius-lg); cursor: pointer; transition: var(--transition-fast); }
 .payment-option:hover { background: var(--white); border-color: var(--gray-300); transform: translateY(-2px); }
-.payment-option.active { background: var(--primary-color); color: var(--white); border-color: var(--primary-color); }
+.payment-option.active { background: black; color: var(--white); border-color:black; }
 .option-logo { width: 40px; height: 40px; background: var(--white); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: var(--font-size-lg); }
 .payment-form { padding: var(--spacing-lg); background: var(--gray-50); }
 
