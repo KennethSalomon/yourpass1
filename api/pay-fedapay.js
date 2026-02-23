@@ -1,7 +1,5 @@
 import axios from 'axios';
 
-import axios from 'axios';
-
 /* ════════════════════════════════════════════════════════════════
    YourPass — api/pay-fedapay.js  (version CORRIGÉE v2)
    
