@@ -331,7 +331,7 @@ window.processMomoPayment = async () => {
 
   try {
     // ✅ CORRECTION : on appelle /api/pay-fedapay (même domaine Vercel)
-    const res = await fetch(`${API_BASE}/health/pay-fedapay`, {
+    const res = await fetch(`${API_BASE}/pay-fedapay`, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
