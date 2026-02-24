@@ -206,7 +206,7 @@ export default async function handler(req, res) {
   /* ── 1. Enregistrement dans Supabase ────────────────────── */
   try {
     const { error } = await supabase
-      .from('payments')                     // ← Table créée par le SQL ci-dessous
+      .from('paiements')                     // ← Table créée par le SQL ci-dessous
       .upsert({
         transaction_id:    txId,
         status:            'approved',
