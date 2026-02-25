@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Connexion | YourPass</title>
   <link rel="stylesheet" href="connexion.css">
-
   <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
   <link rel="manifest" href="manifest.json">
+
   <style>
-    /* Loader pendant vérif session */
+    /* ── Loader session ──────────────────────────────────────── */
     #auth-loader {
       position: fixed; inset: 0;
       background: rgba(0,0,0,0.65);
@@ -30,29 +30,228 @@
     }
     @keyframes _spin { to { transform: rotate(360deg); } }
     #auth-loader p { color: rgba(255,255,255,0.85); font-size: 13px; font-family: 'Poppins',sans-serif; }
-    /* Messages formulaire */
+
+    /* ── Messages formulaire ─────────────────────────────────── */
     .form-msg {
       display: none; text-align: center;
       font-size: 13px; margin-top: 10px;
       padding: 8px 14px; border-radius: 20px;
       font-weight: 500; font-family: 'Poppins', sans-serif;
     }
+
+    /* ── Overlay Email Envoyé ────────────────────────────────── */
+    #email-sent-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center; justify-content: center;
+      z-index: 10000;
+    }
+    #email-sent-overlay.show { display: flex; }
+
+    .email-sent-card {
+      background: #fff;
+      border-radius: 24px;
+      padding: 40px 36px;
+      max-width: 420px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.35);
+      animation: slideUpCard 0.45s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    @keyframes slideUpCard {
+      from { opacity: 0; transform: translateY(40px) scale(0.95); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .envelope-wrapper { position: relative; width: 90px; height: 90px; margin: 0 auto 24px; }
+    .envelope-icon {
+      width: 90px; height: 90px;
+      background: linear-gradient(135deg, #2d6cff, #4f46e5);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 38px;
+      animation: pulse 2s ease-in-out infinite;
+      box-shadow: 0 8px 30px rgba(45,108,255,0.35);
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 8px 30px rgba(45,108,255,0.35); }
+      50%       { transform: scale(1.07); box-shadow: 0 12px 40px rgba(45,108,255,0.5); }
+    }
+    .envelope-wrapper::before, .envelope-wrapper::after {
+      content: ''; position: absolute; border-radius: 50%;
+      animation: float 2.5s ease-in-out infinite;
+    }
+    .envelope-wrapper::before { width:12px;height:12px;background:#2ecc71;top:0;right:5px;animation-delay:.3s; }
+    .envelope-wrapper::after  { width:8px;height:8px;background:#f5c77a;bottom:5px;left:5px;animation-delay:.8s; }
+    @keyframes float { 0%,100%{transform:translateY(0);opacity:1;} 50%{transform:translateY(-8px);opacity:.7;} }
+
+    .email-sent-card h2 { font-family:'Poppins',sans-serif;font-size:22px;font-weight:700;color:#1e293b;margin-bottom:10px; }
+    .email-display { display:inline-block;background:#f0f4ff;color:#2d6cff;font-weight:700;font-size:13px;padding:5px 14px;border-radius:20px;margin-bottom:14px;font-family:'Poppins',sans-serif;word-break:break-all; }
+    .email-sent-card p { font-family:'Poppins',sans-serif;font-size:13.5px;color:#64748b;line-height:1.7;margin-bottom:24px; }
+    .email-sent-card p strong { color:#1e293b; }
+    .redirect-progress-bar { background:#f0f4ff;border-radius:10px;height:6px;width:100%;margin-bottom:14px;overflow:hidden; }
+    .redirect-progress-fill { height:100%;background:linear-gradient(90deg,#2d6cff,#2ecc71);border-radius:10px;width:0%;transition:width .1s linear; }
+    .redirect-info { font-family:'Poppins',sans-serif;font-size:12px;color:#94a3b8;margin-bottom:20px; }
+    .redirect-info span { font-weight:700;color:#2d6cff; }
+    .email-sent-actions { display:flex;gap:10px;justify-content:center;flex-wrap:wrap; }
+    .btn-login-now { background:linear-gradient(135deg,#2d6cff,#4f46e5);color:#fff;border:none;padding:11px 22px;border-radius:12px;font-weight:700;font-size:13px;cursor:pointer;font-family:'Poppins',sans-serif;transition:transform .2s,box-shadow .2s; }
+    .btn-login-now:hover { transform:translateY(-2px);box-shadow:0 6px 20px rgba(45,108,255,.35); }
+    .btn-resend { background:none;color:#2d6cff;border:1.5px solid #2d6cff;padding:11px 18px;border-radius:12px;font-weight:600;font-size:13px;cursor:pointer;font-family:'Poppins',sans-serif;transition:background .2s; }
+    .btn-resend:hover { background:#f0f4ff; }
+    .btn-resend:disabled { opacity:.5;cursor:not-allowed; }
+    .spam-tip { font-family:'Poppins',sans-serif;font-size:11px;color:#94a3b8;margin-top:14px; }
+    .spam-tip strong { color:#f59e0b; }
+
+    /* ══════════════════════════════════════════════════════════
+       BOUTON GOOGLE
+    ══════════════════════════════════════════════════════════ */
+    .google-divider {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 14px 0 10px;
+    }
+    .google-divider::before,
+    .google-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(255,255,255,0.25);
+    }
+    .google-divider span {
+      font-family: 'Poppins', sans-serif;
+      font-size: 11px;
+      color: rgba(255,255,255,0.6);
+      white-space: nowrap;
+    }
+
+    .btn-google {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 11px 16px;
+      background: rgba(255,255,255,0.95);
+      color: #3c4043;
+      border: none;
+      border-radius: 12px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    .btn-google:hover {
+      background: #fff;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+    }
+    .btn-google:active { transform: translateY(0); }
+    .btn-google:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    .btn-google svg {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+
+    /* ── Google loading overlay ──────────────────────────────── */
+    #google-loading {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(6px);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 10001;
+    }
+    #google-loading.show { display: flex; }
+    #google-loading .gl-card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 32px 28px;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      animation: slideUpCard 0.3s ease;
+    }
+    #google-loading .gl-spinner {
+      width: 40px; height: 40px;
+      border: 3px solid #f1f5f9;
+      border-top-color: #4285f4;
+      border-radius: 50%;
+      animation: _spin 0.7s linear infinite;
+      margin: 0 auto 14px;
+    }
+    #google-loading p {
+      font-family: 'Poppins', sans-serif;
+      font-size: 13.5px;
+      color: #64748b;
+      margin: 0;
+    }
+    #google-loading strong {
+      color: #1e293b;
+      display: block;
+      font-size: 15px;
+      margin-bottom: 6px;
+    }
   </style>
 </head>
 <body>
 
-<!-- Loader -->
+<!-- ── Loader session ──────────────────────────────────────── -->
 <div id="auth-loader">
   <div class="loader-spinner"></div>
   <p>Vérification de la session…</p>
 </div>
 
-<!-- Vidéo fond -->
+<!-- ── Overlay : Email envoyé ─────────────────────────────── -->
+<div id="email-sent-overlay">
+  <div class="email-sent-card">
+    <div class="envelope-wrapper">
+      <div class="envelope-icon">✉️</div>
+    </div>
+    <h2>Vérifie ta boîte mail !</h2>
+    <div class="email-display" id="overlay-email">ton@email.com</div>
+    <p>
+      Un email de confirmation a été envoyé à cette adresse.<br>
+      Clique sur le lien dans l'email pour <strong>activer ton compte</strong>
+      et accéder à YourPass.
+    </p>
+    <div class="redirect-progress-bar">
+      <div class="redirect-progress-fill" id="progress-fill"></div>
+    </div>
+    <div class="redirect-info">
+      Redirection vers l'accueil dans <span id="countdown-redirect">10</span>s…
+    </div>
+    <div class="email-sent-actions">
+      <button class="btn-login-now" onclick="goToHomeNow()">🏠 Aller à l'accueil</button>
+      <button class="btn-resend" id="resend-btn" onclick="resendConfirmEmail()">🔄 Renvoyer l'email</button>
+    </div>
+    <p class="spam-tip">
+      📁 Si tu ne vois pas l'email, vérifie tes <strong>spams / courriers indésirables</strong>.
+    </p>
+  </div>
+</div>
+
+<!-- ── Overlay : Connexion Google en cours ────────────────── -->
+<div id="google-loading">
+  <div class="gl-card">
+    <div class="gl-spinner"></div>
+    <strong>Connexion Google</strong>
+    <p>Redirection vers Google…</p>
+  </div>
+</div>
+
+<!-- ── Vidéo fond ─────────────────────────────────────────── -->
 <video id="bg-video" autoplay muted loop playsinline>
   <source src="image video/arrière plan.mp4" type="video/mp4">
 </video>
 
-<!-- Bouton son -->
+<!-- ── Bouton son ─────────────────────────────────────────── -->
 <button id="sound-btn">🔇</button>
 
 <div>
@@ -89,7 +288,7 @@
     <!-- FORM BOX -->
     <div class="form-box">
 
-      <!-- ═══ LOGIN ═══ -->
+      <!-- ══ LOGIN ══ -->
       <div class="login-container" id="login">
         <div class="top">
           <span>Pas de compte ? <a href="#" onclick="showRegister()">Sign Up</a></span>
@@ -114,6 +313,18 @@
 
         <p class="form-msg" id="login-msg"></p>
 
+        <!-- GOOGLE LOGIN -->
+        <div class="google-divider"><span>ou continuer avec</span></div>
+        <button class="btn-google" id="google-login-btn">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+          </svg>
+          Continuer avec Google
+        </button>
+
         <div class="two-col">
           <div class="one">
             <input type="checkbox" id="login-check">
@@ -125,7 +336,7 @@
         </div>
       </div>
 
-      <!-- ═══ REGISTER ═══ -->
+      <!-- ══ REGISTER ══ -->
       <div class="register-container" id="register">
         <div class="top">
           <span>Déjà un compte ? <a href="#" onclick="showLogin()">Login</a></span>
@@ -163,6 +374,18 @@
 
         <p class="form-msg" id="register-msg"></p>
 
+        <!-- GOOGLE REGISTER -->
+        <div class="google-divider"><span>ou s'inscrire avec</span></div>
+        <button class="btn-google" id="google-register-btn">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+          </svg>
+          Continuer avec Google
+        </button>
+
         <div class="two-col">
           <div class="one">
             <input type="checkbox" id="register-check">
@@ -176,48 +399,46 @@
 </div>
 
 <!-- ════ SCRIPTS ════ -->
-
-<!-- Supabase SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase-auth.js"></script>
-
-<script src="js/profile.js"></script>
 
 <script>
-/* ════════════════════════════════════════════════════════════
-   CONFIG SUPABASE
-════════════════════════════════════════════════════════════ */
-const _sb = window.supabase.createClient(
-  'https://towojafvhdywdowrpkrn.supabase.co',
-  'sb_publishable_u2DHBeNqtcd7QVdTTwU_xA_ujiqdFit'
-);
+/* ══════════════════════════════════════════════════════════════
+   CONFIG SUPABASE — client partagé sur window._ypSb
+   (profile.js réutilisera la même instance)
+══════════════════════════════════════════════════════════════ */
+if (!window._ypSb) {
+  window._ypSb = window.supabase.createClient(
+    'https://towojafvhdywdowrpkrn.supabase.co',
+    'sb_publishable_u2DHBeNqtcd7QVdTTwU_xA_ujiqdFit'
+  );
+}
+const _sb = window._ypSb;
 
-/* ── UI helpers ────────────────────────────────────────────── */
+/* ── Variables globales ──────────────────────────────────── */
+let _pendingEmail     = '';
+let _progressInterval = null;
+
+/* ── UI helpers ──────────────────────────────────────────── */
 function showMsg(id, msg, type) {
   const el = document.getElementById(id);
   if (!el) return;
   el.textContent = msg;
   el.style.cssText = `
-    display: block;
-    text-align: center;
-    font-size: 13px;
-    margin-top: 10px;
-    padding: 8px 14px;
-    border-radius: 20px;
-    font-weight: 500;
+    display: block; text-align: center; font-size: 13px; margin-top: 10px;
+    padding: 8px 14px; border-radius: 20px; font-weight: 500;
     font-family: 'Poppins', sans-serif;
     background: ${type === 'error' ? 'rgba(231,76,60,0.25)' : 'rgba(46,204,113,0.25)'};
     color: ${type === 'error' ? '#ff6b6b' : '#2ecc71'};
     border: 1px solid ${type === 'error' ? 'rgba(231,76,60,0.4)' : 'rgba(46,204,113,0.4)'};
   `;
-  setTimeout(() => { el.style.display = 'none'; }, 5500);
+  setTimeout(() => { el.style.display = 'none'; }, 6000);
 }
 
 function setBtnLoading(id, loading, label) {
   const btn = document.getElementById(id);
   if (!btn) return;
   btn.disabled = loading;
-  btn.value = loading ? '⏳ Chargement…' : label;
+  btn.value    = loading ? '⏳ Chargement…' : label;
   btn.style.opacity = loading ? '0.7' : '1';
 }
 
@@ -239,7 +460,46 @@ function hideLoader() {
   setTimeout(() => loader.remove(), 500);
 }
 
-/* ── Slide Login / Register ────────────────────────────────── */
+/* ── Overlay email envoyé ────────────────────────────────── */
+function showEmailSentOverlay(email) {
+  _pendingEmail = email;
+  document.getElementById('overlay-email').textContent = email;
+  document.getElementById('email-sent-overlay').classList.add('show');
+
+  let remaining = 10;
+  const fill    = document.getElementById('progress-fill');
+  const counter = document.getElementById('countdown-redirect');
+  fill.style.width = '0%';
+
+  _progressInterval = setInterval(() => {
+    remaining -= 0.1;
+    fill.style.width = Math.min(((10 - remaining) / 10) * 100, 100) + '%';
+    counter.textContent = Math.max(0, Math.ceil(remaining));
+    if (remaining <= 0) { clearInterval(_progressInterval); goToHomeNow(); }
+  }, 100);
+}
+
+function goToHomeNow() {
+  clearInterval(_progressInterval);
+  window.location.href = 'index.html';
+}
+
+async function resendConfirmEmail() {
+  const btn = document.getElementById('resend-btn');
+  if (!_pendingEmail) return;
+  btn.disabled    = true;
+  btn.textContent = '⏳ Envoi…';
+  const { error } = await _sb.auth.resend({ type: 'signup', email: _pendingEmail });
+  if (error) {
+    btn.textContent = '❌ Erreur';
+    setTimeout(() => { btn.textContent = '🔄 Renvoyer l\'email'; btn.disabled = false; }, 3000);
+  } else {
+    btn.textContent = '✅ Email envoyé !';
+    setTimeout(() => { btn.textContent = '🔄 Renvoyer l\'email'; btn.disabled = false; }, 4000);
+  }
+}
+
+/* ── Navigation formulaires ──────────────────────────────── */
 function showLogin() {
   document.getElementById('login').style.cssText    = 'left:4px; opacity:1;';
   document.getElementById('register').style.cssText = 'right:-520px; opacity:0;';
@@ -252,11 +512,12 @@ function showRegister() {
   document.getElementById('loginBtn').classList.remove('white-btn');
   document.getElementById('registerBtn').classList.add('white-btn');
 }
-// Alias pour les onclick inline existants
-window.login    = showLogin;
-window.register = showRegister;
+window.showLogin    = showLogin;
+window.showRegister = showRegister;
+window.goToHomeNow  = goToHomeNow;
+window.resendConfirmEmail = resendConfirmEmail;
 
-/* ── Son vidéo ─────────────────────────────────────────────── */
+/* ── Son vidéo ───────────────────────────────────────────── */
 const _video    = document.getElementById('bg-video');
 const _soundBtn = document.getElementById('sound-btn');
 _soundBtn.addEventListener('click', () => {
@@ -264,48 +525,44 @@ _soundBtn.addEventListener('click', () => {
   _soundBtn.textContent = _video.muted ? '🔇' : '🔊';
 });
 
-/* ── Menu mobile ───────────────────────────────────────────── */
+/* ── Menu mobile ─────────────────────────────────────────── */
 function myMenuFunction() {
   document.getElementById('navMenu').classList.toggle('responsive');
 }
 
-/* ════════════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════════════════
    GESTION SESSION — onAuthStateChange
-   
-   Écoute TOUS les événements auth en temps réel :
-   ✅ SIGNED_IN      → après login manuel OU clic lien email confirmation
-   ✅ INITIAL_SESSION → session déjà active (retour sur la page)
-════════════════════════════════════════════════════════════ */
+══════════════════════════════════════════════════════════════ */
 let _redirecting = false;
 
 _sb.auth.onAuthStateChange((event, session) => {
   if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session && !_redirecting) {
     _redirecting = true;
-
-    // Sauvegarde locale pour affichage rapide
     const u = session.user;
+    const meta = u.user_metadata || {};
+    const name = meta.firstname
+      ? (meta.firstname + ' ' + (meta.lastname || '')).trim()
+      : (meta.full_name || meta.name || u.email.split('@')[0]);
+
     localStorage.setItem('yourpass_user', JSON.stringify({
-      id:    u.id,
-      email: u.email,
-      name:  u.user_metadata?.firstname
-             ? (u.user_metadata.firstname + ' ' + (u.user_metadata.lastname || '')).trim()
-             : u.email.split('@')[0]
+      id: u.id, email: u.email, name
     }));
 
-    // Délai court pour que le message "Connexion réussie" soit visible
-    setTimeout(() => {
-      window.location.href = window.location.origin + 'index.html';
-    }, 700);
+    // Fermer overlay email si ouvert
+    clearInterval(_progressInterval);
+    // Masquer overlay Google loading si visible
+    document.getElementById('google-loading')?.classList.remove('show');
+
+    setTimeout(() => { window.location.href = 'index.html'; }, 600);
 
   } else if (event === 'INITIAL_SESSION' && !session) {
-    // Aucune session active → afficher les formulaires
     hideLoader();
   }
 });
 
-/* ════════════════════════════════════════════════════════════
-   CONNEXION
-════════════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════════
+   CONNEXION EMAIL/PASSWORD
+══════════════════════════════════════════════════════════════ */
 document.getElementById('login-submit').addEventListener('click', async () => {
   const email    = document.getElementById('login-email').value.trim();
   const password = document.getElementById('login-password').value;
@@ -314,42 +571,31 @@ document.getElementById('login-submit').addEventListener('click', async () => {
     showMsg('login-msg', 'Remplis ton email et ton mot de passe.', 'error');
     return;
   }
-
   setBtnLoading('login-submit', true, 'Sign In');
-
   const { data, error } = await _sb.auth.signInWithPassword({ email, password });
-
   setBtnLoading('login-submit', false, 'Sign In');
 
-  if (error) {
-    showMsg('login-msg', translateErr(error.message), 'error');
-    return;
-  }
+  if (error) { showMsg('login-msg', translateErr(error.message), 'error'); return; }
 
-  // Sauvegarde locale pour affichage rapide (nav, dashboard)
   const u = data.user;
   localStorage.setItem('yourpass_user', JSON.stringify({
-    id:    u.id,
-    email: u.email,
-    name:  u.user_metadata?.firstname
-           ? `${u.user_metadata.firstname} ${u.user_metadata.lastname || ''}`.trim()
-           : u.email.split('@')[0]
+    id: u.id, email: u.email,
+    name: u.user_metadata?.firstname
+      ? `${u.user_metadata.firstname} ${u.user_metadata.lastname || ''}`.trim()
+      : u.email.split('@')[0]
   }));
-
   showMsg('login-msg', '✅ Connexion réussie ! Redirection…', 'success');
-  // La redirection est gérée par onAuthStateChange ci-dessus
 });
 
-/* ── Enter key sur login ────────────────────────────────────── */
 ['login-email', 'login-password'].forEach(id => {
   document.getElementById(id)?.addEventListener('keydown', e => {
     if (e.key === 'Enter') document.getElementById('login-submit').click();
   });
 });
 
-/* ════════════════════════════════════════════════════════════
-   INSCRIPTION
-════════════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════════
+   INSCRIPTION EMAIL/PASSWORD
+══════════════════════════════════════════════════════════════ */
 document.getElementById('reg-submit').addEventListener('click', async () => {
   const firstname = document.getElementById('reg-firstname').value.trim();
   const lastname  = document.getElementById('reg-lastname').value.trim();
@@ -357,92 +603,109 @@ document.getElementById('reg-submit').addEventListener('click', async () => {
   const password  = document.getElementById('reg-password').value;
   const terms     = document.getElementById('register-check').checked;
 
-  // Validations
   if (!firstname || !email || !password) {
-    showMsg('register-msg', 'Remplis tous les champs obligatoires.', 'error');
-    return;
+    showMsg('register-msg', 'Remplis tous les champs obligatoires.', 'error'); return;
   }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    showMsg('register-msg', 'Adresse email invalide.', 'error');
-    return;
+    showMsg('register-msg', 'Adresse email invalide.', 'error'); return;
   }
   if (password.length < 6) {
-    showMsg('register-msg', 'Le mot de passe doit faire au moins 6 caractères.', 'error');
-    return;
+    showMsg('register-msg', 'Le mot de passe doit faire au moins 6 caractères.', 'error'); return;
   }
   if (!terms) {
-    showMsg('register-msg', "Accepte les conditions d'utilisation.", 'error');
-    return;
+    showMsg('register-msg', "Accepte les conditions d'utilisation.", 'error'); return;
   }
 
   setBtnLoading('reg-submit', true, 'Register');
-
-  // Création compte Supabase Auth
   const { data, error } = await _sb.auth.signUp({
-    email,
-    password,
+    email, password,
     options: {
       data: { firstname, lastname },
-      emailRedirectTo: window.location.origin + 'connexion.html'
+      emailRedirectTo: window.location.origin + '/index.html'
     }
   });
-
   setBtnLoading('reg-submit', false, 'Register');
 
-  if (error) {
-    showMsg('register-msg', translateErr(error.message), 'error');
-    return;
-  }
+  if (error) { showMsg('register-msg', translateErr(error.message), 'error'); return; }
 
-  // Insertion profil dans la table `profiles` (SQL à créer dans Supabase)
   if (data.user) {
     const { error: pErr } = await _sb.from('profiles').insert({
-      id:         data.user.id,
-      firstname,
-      lastname:   lastname || '',
-      email,
-      created_at: new Date().toISOString()
+      id: data.user.id, firstname, lastname: lastname || '',
+      email, created_at: new Date().toISOString()
     });
     if (pErr) console.warn('[YourPass] Profil non créé:', pErr.message);
   }
 
-  // Supabase peut exiger une confirmation email selon les paramètres du projet
   if (!data.session) {
-    showMsg('register-msg', '✅ Compte créé ! Vérifie ta boîte email pour confirmer.', 'success');
+    showEmailSentOverlay(email);
   } else {
+    const u = data.user;
     localStorage.setItem('yourpass_user', JSON.stringify({
-      id: data.user.id, email,
-      name: `${firstname} ${lastname}`.trim()
+      id: u.id, email: u.email, name: `${firstname} ${lastname}`.trim()
     }));
-    showMsg('register-msg', '✅ Compte créé avec succès ! Redirection…', 'success');
-    // La redirection est gérée par onAuthStateChange
+    showMsg('register-msg', "✅ Compte créé ! Redirection vers l'accueil…", 'success');
+    setTimeout(() => { window.location.href = 'index.html'; }, 1200);
   }
 });
 
-/* ── Enter key sur register ─────────────────────────────────── */
 ['reg-firstname','reg-lastname','reg-email','reg-password'].forEach(id => {
   document.getElementById(id)?.addEventListener('keydown', e => {
     if (e.key === 'Enter') document.getElementById('reg-submit').click();
   });
 });
 
-/* ════════════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════════════════
+   CONNEXION / INSCRIPTION GOOGLE
+   Fonctionne pour les deux boutons (login + register) —
+   Supabase gère automatiquement : si le compte existe → connexion,
+   sinon → inscription. L'utilisateur ne fait rien de plus.
+══════════════════════════════════════════════════════════════ */
+async function signInWithGoogle() {
+  // Afficher le loader Google
+  document.getElementById('google-loading').classList.add('show');
+  // Désactiver les deux boutons
+  document.getElementById('google-login-btn').disabled    = true;
+  document.getElementById('google-register-btn').disabled = true;
+
+  const { error } = await _sb.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: window.location.origin + '/index.html',
+      queryParams: {
+        access_type: 'offline',
+        prompt: 'consent'
+      }
+    }
+  });
+
+  if (error) {
+    document.getElementById('google-loading').classList.remove('show');
+    document.getElementById('google-login-btn').disabled    = false;
+    document.getElementById('google-register-btn').disabled = false;
+    showMsg('login-msg', 'Erreur Google : ' + error.message, 'error');
+    showMsg('register-msg', 'Erreur Google : ' + error.message, 'error');
+  }
+  // Si succès : Supabase redirige automatiquement vers Google
+  // puis revient sur /index.html avec la session active
+}
+
+document.getElementById('google-login-btn').addEventListener('click', signInWithGoogle);
+document.getElementById('google-register-btn').addEventListener('click', signInWithGoogle);
+
+/* ══════════════════════════════════════════════════════════════
    MOT DE PASSE OUBLIÉ
-════════════════════════════════════════════════════════════ */
+══════════════════════════════════════════════════════════════ */
 document.getElementById('forgot-link').addEventListener('click', async (e) => {
   e.preventDefault();
   const email = document.getElementById('login-email').value.trim();
-
   if (!email) {
     showMsg('login-msg', "Entre d'abord ton email, puis clique ici.", 'error');
     document.getElementById('login-email').focus();
     return;
   }
-
   const { error } = await _sb.auth.resetPasswordForEmail(email, {
     redirectTo: window.location.origin + '/connexion.html'
   });
-
   if (error) {
     showMsg('login-msg', translateErr(error.message), 'error');
   } else {
@@ -451,5 +714,6 @@ document.getElementById('forgot-link').addEventListener('click', async (e) => {
 });
 </script>
 
+<script src="js/profile.js"></script>
 </body>
 </html>
