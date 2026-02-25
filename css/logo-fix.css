@@ -1,63 +1,67 @@
 /* ================================================================
-   YourPass — logo-fix.css
-   À inclure sur TOUTES les pages après le CSS principal.
-   Corrige l'affichage du logo dans la navbar pour qu'il
-   corresponde exactement au fichier image de référence.
+   YourPass — logo-fix.css (CORRIGÉ)
+   Cible .logo img utilisé dans TOUS les fichiers HTML du projet.
+   À inclure sur chaque page APRÈS le CSS principal.
 ================================================================ */
 
-/* ── Conteneur nav-logo ──────────────────────────────────────── */
-.nav-logo {
-  display: flex !important;
-  align-items: center !important;
-  gap: 0 !important;          /* L'image contient déjà oiseau + texte */
-  text-decoration: none !important;
-  flex-shrink: 0 !important;
-}
-
-/* ── Supprimer le logo-container vide (ancien placeholder) ───── */
-.nav-logo .logo-container {
-  display: none !important;
-}
-
-/* ── Wrapper de l'image ──────────────────────────────────────── */
-.nav-logo .Logo,
-.nav-logo .logo {
-  display: flex !important;
-  align-items: center !important;
-  line-height: 0 !important;
-}
-
-/* ── L'image elle-même ───────────────────────────────────────── */
-.nav-logo .Logo img,
-.nav-logo .logo img,
-.nav-logo img {
-  height: 42px !important;      /* Hauteur navbar confortable */
+/* ── Image du logo dans la navbar ────────────────────────────── */
+.logo img {
+  height: 42px !important;
   width: auto !important;
   max-width: 180px !important;
   object-fit: contain !important;
   object-position: left center !important;
   display: block !important;
-  /* Supprime fond gris si l'image a un fond — conserve la transparence */
   background: transparent !important;
-  /* Légère amélioration du rendu du texte doré */
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: crisp-edges;
+  /* Empêche l'image de s'étirer ou de déborder */
+  flex-shrink: 0 !important;
 }
 
-/* ── Version mobile : logo un peu plus petit ─────────────────── */
+/* ── Conteneur .logo dans la navbar ─────────────────────────── */
+.navbar .logo,
+.nav-container .logo {
+  display: flex !important;
+  align-items: center !important;
+  flex-shrink: 0 !important;
+  line-height: 0 !important;
+  /* Empêche le logo de prendre toute la largeur */
+  width: auto !important;
+  max-width: 200px !important;
+}
+
+/* ── Version mobile ──────────────────────────────────────────── */
 @media (max-width: 768px) {
-  .nav-logo .Logo img,
-  .nav-logo .logo img,
-  .nav-logo img {
+  .logo img {
     height: 34px !important;
     max-width: 150px !important;
   }
 }
 
-/* ── Lien cliquable autour du logo (si wrappé dans <a>) ──────── */
-a.nav-logo,
-.nav-logo a {
-  text-decoration: none !important;
+/* ── Logo dans le footer (taille légèrement réduite) ─────────── */
+footer .logo img {
+  height: 36px !important;
+  max-width: 160px !important;
+}
+
+/* ── Compatibilité avec .nav-logo si utilisé ─────────────────── */
+.nav-logo img,
+.nav-logo .Logo img {
+  height: 42px !important;
+  width: auto !important;
+  max-width: 180px !important;
+  object-fit: contain !important;
+  display: block !important;
+  background: transparent !important;
+}
+
+.nav-logo {
   display: flex !important;
   align-items: center !important;
+  flex-shrink: 0 !important;
+  width: auto !important;
+  max-width: 200px !important;
+}
+
+.nav-logo .logo-container {
+  display: none !important;
 }

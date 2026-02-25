@@ -482,7 +482,7 @@ function showEmailSentOverlay(email) {
 
 function goToHomeNow() {
   clearInterval(_progressInterval);
-  window.location.href = 'index.html';
+  window.location.href = 'Splash.html';
 }
 
 async function resendConfirmEmail() {
@@ -554,7 +554,7 @@ _sb.auth.onAuthStateChange((event, session) => {
     // Masquer overlay Google loading si visible
     document.getElementById('google-loading')?.classList.remove('show');
 
-    setTimeout(() => { window.location.href = 'index.html'; }, 600);
+    setTimeout(() => { window.location.href = 'Splash.html'; }, 600);
 
   } else if (event === 'INITIAL_SESSION' && !session) {
     hideLoader();
@@ -645,7 +645,7 @@ document.getElementById('reg-submit').addEventListener('click', async () => {
       id: u.id, email: u.email, name: `${firstname} ${lastname}`.trim()
     }));
     showMsg('register-msg', "✅ Compte créé ! Redirection vers l'accueil…", 'success');
-    setTimeout(() => { window.location.href = 'index.html'; }, 1200);
+    setTimeout(() => { window.location.href = 'Splash.html'; }, 1200);
   }
 });
 
