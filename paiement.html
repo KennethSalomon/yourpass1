@@ -7,7 +7,6 @@
     <script src="https://unpkg.com/scrollreveal"></script>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/profile.css">
-    <link rel="stylesheet" href="logo-fix.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -21,7 +20,6 @@
             <div class="logo">
                 <img src="image video/téléchargement (1).png" alt="YourPass Logo">
             </div>
-            <br><br>
             <ul class="nav-menu" id="navMenu">
                 <li><a href="index.html" class="nav-link">Accueil</a></li>
                 <li><a href="events.html" class="nav-link">Événements</a></li>
@@ -36,9 +34,7 @@
                     <span class="theme-icon">☀️</span>
                 </button>
                 <button class="menu-toggle">
-                    <span></span>
-                    <span></span>
-                    <span></span>
+                    <span></span><span></span><span></span>
                 </button>
             </div>
         </div>
@@ -73,6 +69,7 @@
                                 <h3 id="event-name">Chargement…</h3>
                                 <p id="event-ticket-type">1 billet Standard</p>
                                 <p id="event-date"></p>
+                                <p id="event-venue" style="color:#6b7280;font-size:12px;"></p>
                             </div>
                             <div class="item-price">
                                 <strong id="event-price">— XOF</strong>
@@ -97,9 +94,10 @@
 
                     <!-- Sécurité -->
                     <div class="payment-security">
-                        <div class="security-item"><span>🔒</span> Paiement 100 % sécurisé</div>
-                        <div class="security-item"><span>🛡️</span> Données protégées</div>
-                        <div class="security-item"><span>✅</span> Ticket envoyé par email</div>
+                        <div class="security-item"><span>🔒</span> Paiement 100 % sécurisé via FedaPay</div>
+                        <div class="security-item"><span>🛡️</span> Vos données sont protégées</div>
+                        <div class="security-item"><span>✅</span> Billet envoyé par email</div>
+                        <div class="security-item"><span>↩️</span> Remboursement en cas d'annulation</div>
                     </div>
                 </div>
 
@@ -107,13 +105,13 @@
                 <div class="payment-methods">
                     <h2>Méthodes de paiement</h2>
 
-                    <!-- Mobile Money -->
+                    <!-- Mobile Money (principal — FedaPay) -->
                     <div class="payment-section">
                         <button class="payment-header-btn" onclick="togglePaymentSection('momo')">
                             <div class="payment-icon">📱</div>
                             <div class="payment-info">
                                 <h3>Mobile Money</h3>
-                                <p>MTN, Moov — Rapide & sécurisé</p>
+                                <p>MTN, Moov — Rapide &amp; sécurisé via FedaPay</p>
                             </div>
                             <span class="toggle-icon">▼</span>
                         </button>
@@ -142,139 +140,92 @@
                                     <input
                                         type="tel"
                                         id="phone"
-                                        placeholder="Numéro MTN (ex : 229 97 XX XX XX)"
+                                        placeholder="Ex : 97 XX XX XX ou 229 97 XX XX XX"
                                         required
                                         autocomplete="tel"
+                                        inputmode="numeric"
                                     />
+                                    <small style="color:#6b7280;font-size:11px;margin-top:4px;display:block;">
+                                        Format béninois : 8 chiffres locaux ou avec indicatif 229
+                                    </small>
                                 </div>
                                 <div class="form-group">
-                                    <label for="momo-name">Nom du titulaire *</label>
-                                    <input type="text" id="momo-name" placeholder="Prénom Nom complet" required>
+                                    <label for="momo-name">Prénom et nom du titulaire *</label>
+                                    <input type="text" id="momo-name" placeholder="Ex : Jean Dupont" required autocomplete="name">
                                 </div>
                                 <div class="form-group">
-                                    <label for="momo-email">E-mail (pour recevoir votre billet)</label>
-                                    <input type="email" id="momo-email" placeholder="votre@email.com">
+                                    <label for="momo-email">E-mail (pour recevoir votre billet) *</label>
+                                    <input type="email" id="momo-email" placeholder="votre@email.com" autocomplete="email">
+                                </div>
+
+                                <!-- Résumé montant avant paiement -->
+                                <div id="payment-amount-recap" style="
+                                    background: #f0f9ff;
+                                    border: 1px solid #bae6fd;
+                                    border-radius: 10px;
+                                    padding: 12px 16px;
+                                    margin-bottom: 16px;
+                                    font-size: 14px;
+                                    color: #0369a1;
+                                    display: flex;
+                                    justify-content: space-between;
+                                    align-items: center;
+                                ">
+                                    <span>💳 Montant total :</span>
+                                    <strong id="recap-total" style="font-size:16px;">— XOF</strong>
                                 </div>
 
                                 <button class="btn-primary pay-btn" id="momo-pay-btn" onclick="processMomoPayment()">
                                     <span class="pay-btn-icon">📱</span>
-                                    <span class="pay-btn-text">Payer avec Mobile Money</span>
+                                    <span class="pay-btn-text">Payer maintenant</span>
                                     <span class="pay-btn-loader" style="display:none;">⏳</span>
                                 </button>
 
-                                <p class="pay-notice">🔒 Vous serez redirigé vers FedaPay pour finaliser le paiement en toute sécurité.</p>
+                                <p class="pay-notice">🔒 Vous serez redirigé vers la page FedaPay sécurisée pour finaliser le paiement. Aucune donnée bancaire n'est transmise à YourPass.</p>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Cartes bancaires -->
+                    <!-- Cartes bancaires (bientôt) -->
                     <div class="payment-section">
                         <button class="payment-header-btn" onclick="togglePaymentSection('cards')">
                             <div class="payment-icon">💳</div>
                             <div class="payment-info">
                                 <h3>Cartes Bancaires</h3>
-                                <p>Visa, Mastercard, UBA</p>
+                                <p>Visa, Mastercard — Bientôt disponible</p>
                             </div>
                             <span class="toggle-icon">▼</span>
                         </button>
 
                         <div id="cards-section" class="payment-content">
-                            <div class="payment-options">
-                                <button class="payment-option" onclick="selectPaymentOption(this, 'visa')">
-                                    <div class="option-logo">💳</div>
-                                    <div class="option-info">
-                                        <h4>Visa</h4>
-                                        <p>Accepté partout</p>
-                                    </div>
-                                </button>
-                                <button class="payment-option" onclick="selectPaymentOption(this, 'mastercard')">
-                                    <div class="option-logo">💳</div>
-                                    <div class="option-info">
-                                        <h4>Mastercard</h4>
-                                        <p>Sécurité maximale</p>
-                                    </div>
-                                </button>
-                            </div>
                             <div class="payment-form">
-                                <div class="form-group">
-                                    <label>Numéro de carte *</label>
-                                    <input type="text" placeholder="1234 5678 9012 3456" maxlength="19" required>
+                                <div style="text-align:center;padding:32px 16px;color:#94a3b8;">
+                                    <div style="font-size:48px;margin-bottom:12px;">💳</div>
+                                    <p style="font-size:14px;font-weight:600;color:#64748b;margin:0 0 6px;">Bientôt disponible</p>
+                                    <p style="font-size:13px;margin:0;">Le paiement par carte bancaire sera disponible prochainement. Utilisez Mobile Money pour l'instant.</p>
                                 </div>
-                                <div class="form-row">
-                                    <div class="form-group">
-                                        <label>Date d'expiration *</label>
-                                        <input type="text" placeholder="MM/AA" maxlength="5" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>CVV *</label>
-                                        <input type="text" placeholder="123" maxlength="3" required>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label>Nom du titulaire *</label>
-                                    <input type="text" placeholder="NOM PRÉNOM" required>
-                                </div>
-                                <button class="btn-primary pay-btn" onclick="processCardPayment()">
-                                    <span class="pay-btn-icon">💳</span>
-                                    <span class="pay-btn-text">Payer par carte</span>
-                                </button>
-                                <p class="pay-notice">⚠️ Le paiement par carte sera disponible prochainement.</p>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Cryptomonnaies -->
+                    <!-- Cryptomonnaies (bientôt) -->
                     <div class="payment-section">
                         <button class="payment-header-btn" onclick="togglePaymentSection('crypto')">
                             <div class="payment-icon">₿</div>
                             <div class="payment-info">
                                 <h3>Cryptomonnaies</h3>
-                                <p>Bitcoin, Ethereum, USDT</p>
+                                <p>Bitcoin, USDT — Bientôt disponible</p>
                             </div>
                             <span class="toggle-icon">▼</span>
                         </button>
 
                         <div id="crypto-section" class="payment-content">
-                            <div class="payment-options">
-                                <button class="payment-option" onclick="selectPaymentOption(this, 'bitcoin')">
-                                    <div class="option-logo">₿</div>
-                                    <div class="option-info">
-                                        <h4>Bitcoin</h4>
-                                        <p>La crypto reine</p>
-                                    </div>
-                                </button>
-                                <button class="payment-option" onclick="selectPaymentOption(this, 'usdt')">
-                                    <div class="option-logo">₮</div>
-                                    <div class="option-info">
-                                        <h4>USDT</h4>
-                                        <p>Stable coin</p>
-                                    </div>
-                                </button>
-                            </div>
                             <div class="payment-form">
-                                <div class="form-group">
-                                    <label>Adresse de destination</label>
-                                    <input type="text" value="bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh" readonly>
+                                <div style="text-align:center;padding:32px 16px;color:#94a3b8;">
+                                    <div style="font-size:48px;margin-bottom:12px;">₿</div>
+                                    <p style="font-size:14px;font-weight:600;color:#64748b;margin:0 0 6px;">Bientôt disponible</p>
+                                    <p style="font-size:13px;margin:0;">Le paiement en cryptomonnaie sera disponible prochainement.</p>
                                 </div>
-                                <div class="form-group">
-                                    <label>Réseau</label>
-                                    <select>
-                                        <option>Bitcoin (BTC)</option>
-                                        <option>Ethereum (ETH)</option>
-                                        <option>Tron (TRC20)</option>
-                                    </select>
-                                </div>
-                                <div class="crypto-qr">
-                                    <div class="qr-code">
-                                        <div class="qr-placeholder">📱 QR Code</div>
-                                        <p>Scannez pour payer</p>
-                                    </div>
-                                </div>
-                                <button class="btn-primary pay-btn" onclick="processCryptoPayment()">
-                                    <span class="pay-btn-icon">₿</span>
-                                    <span class="pay-btn-text">Payer avec Crypto</span>
-                                </button>
-                                <p class="pay-notice">⚠️ Le paiement crypto sera disponible prochainement.</p>
                             </div>
                         </div>
                     </div>
@@ -319,18 +270,32 @@
         </div>
     </footer>
 
-    <script src="js/main.js"></script>
+    <!-- ✅ Scripts dans le bon ordre -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-auth.js"></script>
+    <script src="js/events-data.js"></script>
+    <script src="js/main.js"></script>
     <script src="js/profile.js"></script>
 
     <script>
-        // ── Données de l'événement ──────────────────────────────
+        /* ══════════════════════════════════════════════════════════
+           Logique spécifique à paiement.html
+           IMPORTANT : processMomoPayment() est défini dans main.js
+           Ce bloc gère UNIQUEMENT l'affichage du récapitulatif.
+        ══════════════════════════════════════════════════════════ */
+
+        // ── Charger les données de l'événement ──────────────────
         let eventData = {};
         try {
             eventData = JSON.parse(localStorage.getItem('selectedEvent') || '{}');
         } catch { eventData = {}; }
 
-        // ── Calcul du total (cohérent avec main.js) ─────────────
+        // Si aucun événement sélectionné → rediriger
+        if (!eventData.name && !eventData.price) {
+            console.warn('[Paiement] Aucun événement sélectionné.');
+        }
+
+        // ── Calcul du total (utilisé par processMomoPayment dans main.js) ──
         window.calculateTotal = function () {
             const price = parseInt(eventData.price) || 5000;
             const qty   = parseInt(eventData.quantity) || 1;
@@ -338,7 +303,7 @@
             return price * qty + fees;
         };
 
-        // ── Mise à jour de l'affichage résumé ───────────────────
+        // ── Mise à jour de l'affichage récapitulatif ─────────────
         function updateSummaryDisplay() {
             const price    = parseInt(eventData.price) || 5000;
             const qty      = parseInt(eventData.quantity) || 1;
@@ -349,51 +314,50 @@
 
             const fmt = n => n.toLocaleString('fr-FR') + ' XOF';
 
-            if (eventData.name) {
-                document.getElementById('event-name').textContent = eventData.name;
-            }
-            document.getElementById('event-ticket-type').textContent = `${qty} billet${qty > 1 ? 's' : ''} ${type}`;
+            // Nom événement
+            const nameEl = document.getElementById('event-name');
+            if (nameEl) nameEl.textContent = eventData.name || 'Votre billet';
+
+            // Type + quantité
+            const typeEl = document.getElementById('event-ticket-type');
+            if (typeEl) typeEl.textContent = `${qty} billet${qty > 1 ? 's' : ''} ${type}`;
+
+            // Date
             if (eventData.date) {
-                document.getElementById('event-date').textContent =
-                    new Date(eventData.date).toLocaleDateString('fr-FR', {
-                        day: 'numeric', month: 'long', year: 'numeric'
-                    });
+                const dateEl = document.getElementById('event-date');
+                if (dateEl) dateEl.textContent = new Date(eventData.date).toLocaleDateString('fr-FR', {
+                    day: 'numeric', month: 'long', year: 'numeric'
+                });
             }
 
-            document.getElementById('event-price').textContent = fmt(price);
+            // Lieu
+            const venueEl = document.getElementById('event-venue');
+            if (venueEl && eventData.venue) {
+                venueEl.textContent = `📍 ${eventData.venue}${eventData.location ? ', ' + eventData.location : ''}`;
+            }
+
+            // Montants
+            document.getElementById('event-price').textContent = fmt(price * qty);
             document.getElementById('subtotal').textContent    = fmt(subtotal);
             document.getElementById('fees').textContent        = fmt(fees);
             document.getElementById('total').textContent       = fmt(total);
+
+            // Récapitulatif dans le formulaire
+            const recapEl = document.getElementById('recap-total');
+            if (recapEl) recapEl.textContent = fmt(total);
         }
 
-        // ── Toggle sections paiement ─────────────────────────────
-        function togglePaymentSection(sectionId) {
-            document.querySelectorAll('.payment-content').forEach(c => c.classList.remove('active'));
-            const target = document.getElementById(sectionId + '-section');
-            if (target) target.classList.add('active');
-        }
-
-        // ── Sélection opérateur ──────────────────────────────────
-        function selectPaymentOption(element, option) {
-            element.closest('.payment-options')
-                .querySelectorAll('.payment-option')
-                .forEach(opt => opt.classList.remove('active'));
-            element.classList.add('active');
-            const phoneInput = document.getElementById('phone');
-            if (phoneInput) {
-                phoneInput.placeholder = `Numéro ${option.toUpperCase()} (ex : 229 ${option === 'moov' ? '96' : '97'} XX XX XX)`;
-            }
-        }
-
+        // Lancer au chargement
         document.addEventListener('DOMContentLoaded', updateSummaryDisplay);
+        // Aussi si le DOM est déjà prêt
+        if (document.readyState !== 'loading') updateSummaryDisplay();
     </script>
 
     <style>
         /* ── Paiement page styles ────────────────────────────── */
         .payment-header {
             padding: 120px 0 var(--spacing-xl);
-            background:linear-gradient(135deg, rgba(107, 255, 243, 0.9), rgba(28, 30, 134, 0.9));
-            
+            background: linear-gradient(135deg, rgba(107, 255, 243, 0.9), rgba(28, 30, 134, 0.9));
             position: relative;
         }
 
@@ -481,7 +445,6 @@
         .item-price strong {
             font-size: var(--font-size-lg);
             font-weight: 700;
-            color:'';
             white-space: nowrap;
         }
 
@@ -501,7 +464,7 @@
         .total-row.final {
             font-size: var(--font-size-base);
             font-weight: 700;
-            color: red;
+            color: #1C4DB8;
             padding-top: var(--spacing-sm);
             border-top: 2px solid var(--gray-200);
             margin-top: var(--spacing-sm);
@@ -602,7 +565,7 @@
         }
 
         .payment-content.active {
-            max-height: 1000px;
+            max-height: 1200px;
             transition: max-height 0.5s ease-in;
         }
 
@@ -669,8 +632,7 @@
             font-size: var(--font-size-sm);
         }
 
-        .form-group input,
-        .form-group select {
+        .form-group input {
             width: 100%;
             padding: var(--spacing-md);
             border: 2px solid var(--gray-200);
@@ -681,23 +643,15 @@
             font-family: inherit;
         }
 
-        .form-group input:focus,
-        .form-group select:focus {
+        .form-group input:focus {
             outline: none;
             border-color: #1C4DB8;
-            box-shadow: 0 0 0 3px rgba(211, 126, 93, 0.15);
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: var(--spacing-md);
-            margin-bottom: 0;
+            box-shadow: 0 0 0 3px rgba(73, 136, 196, 0.15);
         }
 
         .pay-btn {
             width: 100%;
-            padding: var(--spacing-md) var(--spacing-xl);
+            padding: 14px var(--spacing-xl);
             font-size: var(--font-size-base);
             font-weight: 700;
             border-radius: var(--radius-xl);
@@ -707,6 +661,7 @@
             gap: 8px;
             margin-bottom: var(--spacing-md);
             transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+            cursor: pointer;
         }
 
         .pay-btn:disabled {
@@ -719,28 +674,7 @@
             font-size: 11.5px;
             color: var(--gray-500);
             text-align: center;
-            line-height: 1.5;
-        }
-
-        .crypto-qr {
-            display: flex;
-            justify-content: center;
-            margin: var(--spacing-lg) 0;
-        }
-
-        .qr-code { text-align: center; }
-
-        .qr-placeholder {
-            width: 130px;
-            height: 130px;
-            background: var(--gray-100);
-            border: 2px dashed var(--gray-300);
-            border-radius: var(--radius-lg);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            margin: 0 auto var(--spacing-sm);
+            line-height: 1.6;
         }
 
         /* ── Dark mode ────────────────────────── */
@@ -750,16 +684,11 @@
             border-color: var(--dark-border);
         }
 
-        body.dark-mode .payment-header-btn {
-            background: var(--dark-surface);
-        }
-
+        body.dark-mode .payment-header-btn { background: var(--dark-surface); }
         body.dark-mode .payment-header-btn:hover { background: var(--dark-bg); }
-
         body.dark-mode .payment-form { background: var(--dark-bg); }
 
-        body.dark-mode .form-group input,
-        body.dark-mode .form-group select {
+        body.dark-mode .form-group input {
             background: var(--dark-surface);
             border-color: var(--dark-border);
             color: var(--dark-text);
@@ -768,9 +697,7 @@
         body.dark-mode .payment-info h3,
         body.dark-mode .order-summary h2,
         body.dark-mode .payment-methods h2,
-        body.dark-mode .item-info h3 {
-            color: #fff;
-        }
+        body.dark-mode .item-info h3 { color: #fff; }
 
         body.dark-mode .payment-option {
             background: var(--dark-bg);
@@ -778,7 +705,7 @@
             color: var(--dark-text);
         }
 
-        body.dark-mode .total-row.final { color: #fff; }
+        body.dark-mode .total-row.final { color: #93c5fd; }
 
         /* ── Responsive ───────────────────────── */
         @media (max-width: 768px) {
@@ -786,18 +713,8 @@
                 grid-template-columns: 1fr;
                 gap: var(--spacing-xl);
             }
-
-            .order-summary {
-                position: static;
-            }
-
-            .payment-options {
-                grid-template-columns: 1fr;
-            }
-
-            .form-row {
-                grid-template-columns: 1fr;
-            }
+            .order-summary { position: static; }
+            .payment-options { grid-template-columns: 1fr; }
         }
     </style>
 </body>

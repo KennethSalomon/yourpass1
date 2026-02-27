@@ -24,7 +24,7 @@ export default async function handler(req, res) {
 
   const key      = process.env.FEDAPAY_SECRET_KEY || '';
   const callback = process.env.CALLBACK_URL || 'https://yourpass1.vercel.app/success.html';
-  const mode     = key.startsWith('sk_live_') ? 'PRODUCTION' : key.startsWith('sk_sandbox_') ? 'LIVE' : 'INVALIDE';
+  const mode     = key.startsWith('sk_live_') ? 'PRODUCTION' : key.startsWith('sk_live_') ? 'LIVE' : 'INVALIDE';
 
   const body = await parseBody(req);
 

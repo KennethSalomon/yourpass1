@@ -8,8 +8,8 @@
 
 'use strict';
 
-const SUPABASE_URL = 'https://towojafvhdywdowrpkrn.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_u2DHBeNqtcd7QVdTTwU_xA_ujiqdFit';
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_SECRET_KEY = process.env.SUPABASE_SECRET_KEY;
 
 /* ── Init client ─────────────────────────────────────────────── */
 const { createClient } = window.supabase;
@@ -179,7 +179,6 @@ async function handleRegister(e) {
     showFormMessage('register', '✅ Compte créé ! Redirection…', 'success');
     setTimeout(() => { window.location.href = 'index.html'; }, 800);
   }
-}
 
 /* ════════════════════════════════════════════════════════════════
    MOT DE PASSE OUBLIÉ

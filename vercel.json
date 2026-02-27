@@ -5,6 +5,12 @@
       "maxDuration": 30
     }
   },
+  "rewrites": [
+    {
+      "source": "/api/verify/:id",
+      "destination": "/api/verify/[id]"
+    }
+  ],
   "headers": [
     {
       "source": "/api/(.*)",

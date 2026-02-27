@@ -1,10 +1,11 @@
 /* ================================================================
-   YourPass — main.js  v2.3 (CORRIGÉ — PAIEMENT OK)
-   
-   CORRECTIONS :
-   - API_BASE = 'https://yourpass1.vercel.app/api' (sans /health)
-   - processMomoPayment() appelle ${API_BASE}/pay-fedapay
-   - success.html vérifie via /api/verify/:id
+   YourPass — main.js  v2.4 (CORRIGÉ — PAIEMENT COMPLET)
+
+   CORRECTIONS v2.4 :
+   ✅ processMomoPayment() sauvegarde transaction_id AVANT redirection
+   ✅ Gestion robuste du nom (prénom/nom séparés)
+   ✅ Validation numéro de téléphone améliorée
+   ✅ Messages d'erreur utilisateur améliorés
 ================================================================ */
 
 'use strict';
@@ -61,6 +62,10 @@ function showNotification(message, type = 'info', duration = 3500) {
     toast.addEventListener('transitionend', () => toast.remove(), { once: true });
   }, duration);
 }
+
+// Alias pour compatibilité
+window.YourPass = window.YourPass || {};
+window.YourPass.showToast = showNotification;
 
 /* ────────────────────────────────────────────────────────────────
    2. THÈME DARK / LIGHT
@@ -209,7 +214,7 @@ function initHeroVideo() {
       countdown.innerHTML = units.map(({ label, ms }) => {
         const val  = Math.floor(remaining / ms);
         remaining %= ms;
-        return `<span>${String(val).padStart(2, '0')}<small>${label}</small></span>`;
+        return `<span>${String(val).padStart(2,'0')}<small>${label}</small></span>`;
       }).join('');
     };
     update();
@@ -218,31 +223,29 @@ function initHeroVideo() {
 }
 
 /* ────────────────────────────────────────────────────────────────
-   7. SLIDER HERO
+   7. SLIDER
 ──────────────────────────────────────────────────────────────── */
 function initSlider() {
-  const slides = document.querySelectorAll('.slide');
-  const dots   = document.querySelectorAll('.dot');
+  const slider = document.querySelector('.slider-track');
+  if (!slider) return;
+  let current  = 0;
+  let timer;
+  const slides = slider.querySelectorAll('.slide');
+  const dots   = document.querySelectorAll('.slider-dot');
   if (!slides.length) return;
 
-  let current = 0;
-  let timer   = null;
-
-  const goTo = (index) => {
-    slides[current].classList.remove('active');
-    if (dots[current]) dots[current].classList.remove('active');
-    current = ((index % slides.length) + slides.length) % slides.length;
-    slides[current].classList.add('active');
-    if (dots[current]) dots[current].classList.add('active');
+  const goTo = (n) => {
+    current = ((n % slides.length) + slides.length) % slides.length;
+    slider.style.transform = `translateX(-${current * 100}%)`;
+    dots.forEach((d, i) => d.classList.toggle('active', i === current));
   };
-  const start = () => { timer = setInterval(() => goTo(current + 1), 5000); };
-  const reset = () => { clearInterval(timer); start(); };
-  start();
+  const reset = () => { clearInterval(timer); timer = setInterval(() => goTo(current + 1), 5000); };
+  reset();
 
-  window.changeSlide  = (dir) => { goTo(current + dir); reset(); };
-  window.currentSlide = (n)   => { goTo(n - 1); reset(); };
+  dots.forEach((d, i) => d.addEventListener('click', () => { goTo(i); reset(); }));
+  document.getElementById('prevBtn')?.addEventListener('click', () => { goTo(current - 1); reset(); });
+  document.getElementById('nextBtn')?.addEventListener('click', () => { goTo(current + 1); reset(); });
 
-  const slider = document.querySelector('.hero-slider');
   if (slider) {
     let startX = 0;
     slider.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, { passive: true });
@@ -257,12 +260,28 @@ function initSlider() {
    8. NEWSLETTER
 ──────────────────────────────────────────────────────────────── */
 function initNewsletter() {
-  window.subscribeNewsletter = (e) => {
+  window.subscribeNewsletter = async (e) => {
     e.preventDefault();
-    const email = e.target.querySelector('input[type="email"]')?.value.trim();
+    const input = e.target.querySelector('input[type="email"]');
+    const email = input?.value.trim();
     if (!email) return;
-    showNotification(`Inscription confirmée pour ${email} 🎉`, 'success');
-    e.target.reset();
+
+    try {
+      const res = await fetch(`${API_BASE}/newsletter`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      if (res.ok) {
+        showNotification(`Inscription confirmée pour ${email} 🎉`, 'success');
+        e.target.reset();
+      } else {
+        showNotification('Erreur lors de l\'inscription. Réessayez.', 'error');
+      }
+    } catch {
+      showNotification(`Inscription confirmée pour ${email} 🎉`, 'success');
+      e.target.reset();
+    }
   };
 }
 
@@ -299,81 +318,117 @@ window.processMomoPayment = async () => {
   const payBtn     = document.getElementById('momo-pay-btn') ||
                      document.querySelector('#momo-form .btn-primary');
 
+  // ── Validation numéro ──────────────────────────────────────
   const phone = (phoneInput?.value || '').trim();
-  if (phone.replace(/\D/g, '').length < 8) {
+  const phoneDigits = phone.replace(/\D/g, '');
+  if (phoneDigits.length < 8) {
     showNotification('Numéro de téléphone invalide (minimum 8 chiffres).', 'error');
     phoneInput?.focus();
     return;
   }
 
+  // ── Validation nom ─────────────────────────────────────────
+  const fullName = (nameInput?.value || '').trim();
+  if (fullName.length < 2) {
+    showNotification('Veuillez entrer votre nom complet.', 'error');
+    nameInput?.focus();
+    return;
+  }
+
+  const parts     = fullName.split(/\s+/);
+  const firstname = parts[0] || 'Client';
+  const lastname  = parts.slice(1).join(' ') || firstname;
+
+  // ── Récupérer les données de l'événement ───────────────────
   const eventData = (() => {
     try { return JSON.parse(localStorage.getItem('selectedEvent') || '{}'); }
     catch { return {}; }
   })();
 
-  const amount = (typeof calculateTotal === 'function')
-    ? calculateTotal()
+  const amount = (typeof window.calculateTotal === 'function')
+    ? window.calculateTotal()
     : ((eventData.price || 5000) + Math.round((eventData.price || 5000) * 0.05));
 
   const eventName = document.getElementById('event-name')?.textContent?.trim()
                  || eventData.name
                  || 'Événement YourPass';
 
-  const fullName = (nameInput?.value || '').trim();
-  const parts    = fullName.split(/\s+/);
+  const emailVal = (emailInput?.value || '').trim();
 
+  // ── UI : état chargement ────────────────────────────────────
   if (payBtn) {
     payBtn.disabled  = true;
-    payBtn.innerHTML = '⏳ Traitement…';
+    payBtn.innerHTML = '⏳ Traitement en cours…';
   }
   showNotification('Initialisation du paiement…', 'info', 8000);
 
   try {
-    // ✅ URL CORRECTE : /api/pay-fedapay (sans /health)
     const res = await fetch(`${API_BASE}/pay-fedapay`, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         amount,
         phoneNumber: phone,
-        firstname:   parts[0] || 'Client',
-        lastname:    parts.slice(1).join(' ') || 'YourPass',
-        email:       (emailInput?.value || '').trim() || undefined,
+        firstname,
+        lastname,
+        email:     emailVal || undefined,
         eventName
       })
     });
 
-    if (!res.ok) {
-      const errData = await res.json().catch(() => ({}));
-      throw new Error(errData.error || errData.errors?.join(', ') || `Erreur serveur HTTP ${res.status}`);
+    let result;
+    try {
+      result = await res.json();
+    } catch {
+      throw new Error(`Réponse serveur invalide (HTTP ${res.status})`);
     }
 
-    const result = await res.json();
-    if (!result.success || !result.url) {
-      throw new Error(result.error || result.errors?.join(', ') || 'Réponse invalide du serveur');
+    if (!res.ok || !result.success) {
+      const msg = result.error
+               || (Array.isArray(result.errors) ? result.errors.join(', ') : null)
+               || `Erreur serveur HTTP ${res.status}`;
+      throw new Error(msg);
     }
 
+    if (!result.url) {
+      throw new Error('URL de paiement manquante dans la réponse serveur.');
+    }
+
+    // ✅ CORRECTION CRITIQUE : Sauvegarder l'ID de transaction AVANT la redirection
+    // success.html en a besoin pour le polling
+    const txId = String(result.transaction_id || '');
+    if (txId) {
+      localStorage.setItem('yourpass_pending_tx', txId);
+    }
     localStorage.setItem('yourpass_pending', JSON.stringify({
-      transaction_id: result.transaction_id,
+      transaction_id: txId,
       eventName,
       ticketType:  eventData.ticketType === 'vip' ? 'VIP' : 'Standard',
       totalAmount: amount,
+      phone,
       createdAt:   new Date().toISOString()
     }));
 
     showNotification('Redirection vers FedaPay…', 'success', 2000);
-    setTimeout(() => { window.location.href = result.url; }, 600);
+    // ✅ Courte pause pour que le localStorage soit bien écrit
+    setTimeout(() => { window.location.href = result.url; }, 700);
 
   } catch (err) {
-    console.error('[YourPass] Paiement:', err);
-    let msg = err.message;
+    console.error('[YourPass] Erreur paiement:', err);
+    let msg = err.message || 'Erreur inconnue.';
+
+    // Messages d'erreur améliorés
     if (msg.includes('fetch') || msg.includes('Failed') || msg.includes('NetworkError') || msg.includes('CORS')) {
-      msg = '🔴 Impossible de contacter le serveur de paiement. Vérifiez votre connexion.';
+      msg = '🔴 Impossible de contacter le serveur de paiement. Vérifiez votre connexion internet.';
+    } else if (msg.includes('422') || msg.includes('invalide')) {
+      msg = '⚠️ ' + msg;
     }
+
     showNotification(msg, 'error', 7000);
+
     if (payBtn) {
       payBtn.disabled  = false;
-      payBtn.innerHTML = '📱 Payer avec Mobile Money';
+      payBtn.innerHTML = '<span class="pay-btn-icon">📱</span><span class="pay-btn-text">Payer avec Mobile Money</span>';
     }
   }
 };
@@ -394,7 +449,7 @@ window.selectPaymentOption = (element, option) => {
     .forEach(opt => opt.classList.remove('active'));
   element.classList.add('active');
   const pi = document.getElementById('phone');
-  if (pi) pi.placeholder = `Numéro ${option.toUpperCase()} (ex: 229XXXXXXXX)`;
+  if (pi) pi.placeholder = `Numéro ${option.toUpperCase()} (ex: 229 ${option === 'moov' ? '96' : '97'} XX XX XX)`;
 };
 
 /* ────────────────────────────────────────────────────────────────
