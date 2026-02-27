@@ -13,7 +13,7 @@ const SUPABASE_SECRET_KEY = process.env.SUPABASE_SECRET_KEY;
 
 /* ── Init client ─────────────────────────────────────────────── */
 const { createClient } = window.supabase;
-const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+const sb = createClient(SUPABASE_URL, SUPABASE_SECRET_KEY);
 
 /* ════════════════════════════════════════════════════════════════
    UTILITAIRES
