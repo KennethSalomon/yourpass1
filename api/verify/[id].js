@@ -1,130 +1,66 @@
-import { createClient } from '@supabase/supabase-js';
-import axios from 'axios';
-
-/* ══════════════════════════════════════════════════════════════════
-   YourPass — api/verify/[id].js
-   
-   Endpoint de vérification du statut d'une transaction FedaPay.
-   Appelé par success.html en polling.
-   
-   Route : GET /api/verify/:id
-   
-   Stratégie :
-   1. Vérifier dans Supabase (mis à jour par webhook)
-   2. Si absent/pending → interroger directement l'API FedaPay
-   3. Retourner { status, amount, currency }
-══════════════════════════════════════════════════════════════════ */
-
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY
-);
-
-const FEDAPAY_SECRET_KEY = process.env.FEDAPAY_SECRET_KEY;
-
-/* ── Interroger FedaPay directement ───────────────────────────── */
-async function fetchFromFedaPay(txId) {
-  if (!FEDAPAY_SECRET_KEY) return null;
-  try {
-    const res = await axios.get(`https://api.fedapay.com/v1/transactions/${txId}`, {
-      headers: { Authorization: `Bearer ${FEDAPAY_SECRET_KEY}` },
-      timeout: 10000
-    });
-
-    const tx = res.data?.['v1/transaction'] || res.data?.transaction || res.data;
-
-    const statusMap = {
-      'approved':    'completed',
-      'transferred': 'completed',
-      'declined':    'failed',
-      'cancelled':   'cancelled',
-      'pending':     'pending',
-      'error':       'failed'
-    };
-
-    return {
-      status:   statusMap[tx?.status] || tx?.status || 'pending',
-      amount:   Number(tx?.amount || 0),
-      currency: tx?.currency?.iso || 'XOF',
-      raw:      tx?.status
-    };
-  } catch (err) {
-    console.warn('[Verify] Erreur FedaPay direct:', err.message);
-    return null;
-  }
-}
+// api/verify/[id].js — YourPass
+// Vérifie le statut d'une transaction FedaPay par son ID
+// Appelé par success.html en polling jusqu'à confirmation
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
   if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'GET')     return res.status(405).json({ error: 'Méthode non autorisée' });
+  if (req.method !== 'GET') return res.status(405).json({ error: 'Méthode non autorisée' });
 
-  // Récupérer l'ID depuis la route dynamique ou le query param
-  const txId = req.query?.id
-            || req.url?.split('/').pop()?.split('?')[0];
+  const { id } = req.query;
 
-  if (!txId || txId === 'verify') {
+  if (!id) {
     return res.status(400).json({ error: 'ID de transaction manquant' });
   }
 
-  console.log('[Verify] Vérification TX:', txId);
+  const FEDAPAY_SECRET = process.env.FEDAPAY_SECRET_KEY;
+  const FEDAPAY_ENV    = process.env.FEDAPAY_ENV || 'sandbox';
+  const FEDAPAY_BASE   = FEDAPAY_ENV === 'live'
+    ? 'https://api.fedapay.com/v1'
+    : 'https://sandbox-api.fedapay.com/v1';
 
-  /* ── 1. Chercher dans Supabase ────────────────────────────── */
-  try {
-    const { data: rows, error } = await supabase
-      .from('payments')
-      .select('status, amount, currency, updated_at')
-      .eq('fedapay_id', String(txId))
-      .order('updated_at', { ascending: false })
-      .limit(1);
-
-    if (!error && rows && rows.length > 0) {
-      const row = rows[0];
-      console.log('[Verify] Trouvé en DB:', row.status);
-
-      // Si le statut est terminal, retourner directement
-      if (['completed', 'failed', 'cancelled', 'refunded'].includes(row.status)) {
-        return res.status(200).json({
-          status:   row.status,
-          amount:   row.amount,
-          currency: row.currency || 'XOF'
-        });
-      }
-    }
-  } catch (err) {
-    console.warn('[Verify] Erreur Supabase:', err.message);
+  if (!FEDAPAY_SECRET) {
+    return res.status(500).json({ error: 'Configuration serveur manquante' });
   }
 
-  /* ── 2. Fallback : interroger FedaPay directement ─────────── */
-  const fedaData = await fetchFromFedaPay(txId);
+  try {
+    const response = await fetch(`${FEDAPAY_BASE}/transactions/${id}`, {
+      headers: {
+        'Authorization': `Bearer ${FEDAPAY_SECRET}`,
+        'Accept':        'application/json',
+      },
+    });
 
-  if (fedaData) {
-    console.log('[Verify] Statut FedaPay direct:', fedaData.status);
+    const data = await response.json();
 
-    // Mettre à jour Supabase si le statut est terminal
-    if (['completed', 'failed', 'cancelled'].includes(fedaData.status)) {
-      supabase.from('payments').upsert(
-        { fedapay_id: String(txId), ...fedaData, updated_at: new Date().toISOString() },
-        { onConflict: 'fedapay_id', ignoreDuplicates: false }
-      ).then(({ error }) => {
-        if (error) console.warn('[Verify] Erreur màj Supabase:', error.message);
-      });
+    if (!response.ok) {
+      const errMsg = data?.message || data?.error || `HTTP ${response.status}`;
+      return res.status(response.status).json({ error: errMsg });
     }
+
+    const tx     = data.v1?.transaction || data.transaction || data;
+    const status = tx.status || 'unknown';
+
+    // Générer un ID de billet si la transaction est approuvée
+    const ticketId = (status === 'approved' || status === 'paid' || status === 'successful')
+      ? `YP-${tx.id}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`
+      : undefined;
 
     return res.status(200).json({
-      status:   fedaData.status,
-      amount:   fedaData.amount,
-      currency: fedaData.currency
+      id:             tx.id,
+      status,
+      amount:         tx.amount,
+      currency:       tx.currency?.iso || 'XOF',
+      description:    tx.description,
+      ticketId,
+      created_at:     tx.created_at,
+      approved_at:    tx.approved_at,
     });
-  }
 
-  /* ── 3. Rien trouvé → pending ─────────────────────────────── */
-  return res.status(200).json({
-    status:   'pending',
-    amount:   0,
-    currency: 'XOF'
-  });
+  } catch (err) {
+    console.error('[Verify] Erreur:', err.message);
+    return res.status(500).json({ error: `Erreur serveur: ${err.message}` });
+  }
 }

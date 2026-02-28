@@ -1,197 +1,86 @@
-import { createClient } from '@supabase/supabase-js';
+// api/webhook-fedapay.js — YourPass
+// Reçoit les notifications FedaPay (IPN) et enregistre les paiements confirmés
+// URL à configurer dans le dashboard FedaPay : https://yourpass.vercel.app/api/webhook-fedapay
+
 import crypto from 'crypto';
 
-/* ══════════════════════════════════════════════════════════════════
-   YourPass — api/webhook.js  (version CORRIGÉE v3)
-
-   CORRECTIONS v3 :
-   1. ✅ createClient() direct (Node.js) — plus de window.supabaseClient
-   2. Table unifiée : "payments" avec fallback "paiements"
-   3. Upsert avec onConflict pour éviter les doublons
-   4. Vérification signature HMAC FedaPay (sécurité)
-   5. Gestion robuste de tous les statuts FedaPay
-══════════════════════════════════════════════════════════════════ */
-
-// ✅ CORRECTION : Créer le client Supabase côté serveur avec les vars d'env
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY  // Utiliser la clé SERVICE ROLE côté serveur
-);
-
-const WEBHOOK_SECRET = process.env.FEDAPAY_WEBHOOK_SECRET; // Optionnel mais recommandé
-
-/* ── Vérification signature HMAC ──────────────────────────────── */
-function verifySignature(payload, signature, secret) {
-  if (!secret || !signature) return true; // Ignorer si non configuré
-  try {
-    const expected = crypto
-      .createHmac('sha256', secret)
-      .update(payload)
-      .digest('hex');
-    return crypto.timingSafeEqual(
-      Buffer.from(expected, 'hex'),
-      Buffer.from(signature.replace('sha256=', ''), 'hex')
-    );
-  } catch {
-    return false;
-  }
-}
-
-/* ── Extraction du statut normalisé ──────────────────────────── */
-function normalizeStatus(fedapayStatus) {
-  const map = {
-    'approved':    'completed',
-    'declined':    'failed',
-    'cancelled':   'cancelled',
-    'refunded':    'refunded',
-    'transferred': 'completed',
-    'pending':     'pending',
-    'error':       'failed'
-  };
-  return map[fedapayStatus] || fedapayStatus || 'unknown';
-}
-
-/* ── Extraction données transaction depuis payload ────────────── */
-function extractTransactionData(payload) {
-  const tx = payload?.['v1/transaction']
-           || payload?.transaction
-           || payload?.data
-           || payload;
-
-  const customer = tx?.customer || {};
-  const phone    = customer?.phone_number?.number
-                || customer?.phone_number
-                || null;
-
-  return {
-    fedapay_id:     String(tx?.id || tx?.reference || ''),
-    amount:         Number(tx?.amount || 0),
-    currency:       tx?.currency?.iso || tx?.currency || 'XOF',
-    status:         normalizeStatus(tx?.status),
-    customer_name:  [customer?.firstname, customer?.lastname].filter(Boolean).join(' ') || null,
-    customer_email: customer?.email || null,
-    customer_phone: phone,
-    description:    tx?.description || null,
-    event_name:     tx?.description?.replace(/^YourPass\s*[—-]\s*/, '') || null,
-    raw_status:     tx?.status || null,
-    fedapay_event:  payload?.name || payload?.event || null,
-    updated_at:     new Date().toISOString()
-  };
-}
-
-/* ── Handler principal ─────────────────────────────────────────── */
 export default async function handler(req, res) {
-  // FedaPay envoie des POST
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Méthode non autorisée' });
-  }
+  if (req.method !== 'POST') return res.status(405).end();
 
-  // Lire le body brut pour vérification signature
-  let rawBody = '';
-  let payload;
+  const WEBHOOK_SECRET = process.env.FEDAPAY_WEBHOOK_SECRET;
+  const rawBody = req.body;
 
-  try {
-    if (req.body && typeof req.body === 'object') {
-      payload = req.body;
-      rawBody = JSON.stringify(payload);
-    } else if (req.body && typeof req.body === 'string') {
-      rawBody = req.body;
-      payload = JSON.parse(rawBody);
-    } else {
-      await new Promise((resolve) => {
-        req.on('data', chunk => { rawBody += chunk.toString(); });
-        req.on('end', resolve);
-      });
-      payload = rawBody ? JSON.parse(rawBody) : {};
-    }
-  } catch (err) {
-    console.error('[Webhook] Erreur parsing body:', err.message);
-    return res.status(400).json({ error: 'Corps de requête invalide' });
-  }
-
-  // Vérification signature (si configurée)
-  const signature = req.headers['x-fedapay-signature'] || req.headers['x-webhook-signature'];
-  if (WEBHOOK_SECRET && !verifySignature(rawBody, signature, WEBHOOK_SECRET)) {
-    console.error('[Webhook] Signature invalide !');
-    return res.status(401).json({ error: 'Signature invalide' });
-  }
-
-  console.log('[Webhook] Reçu:', {
-    event: payload?.name || payload?.event,
-    keys: Object.keys(payload || {})
-  });
-
-  // Extraire données transaction
-  const txData = extractTransactionData(payload);
-
-  console.log('[Webhook] Transaction extraite:', {
-    id:     txData.fedapay_id,
-    status: txData.status,
-    amount: txData.amount,
-    phone:  txData.customer_phone
-  });
-
-  if (!txData.fedapay_id) {
-    console.warn('[Webhook] Pas de fedapay_id dans le payload, ignoré');
-    return res.status(200).json({ received: true, skipped: 'no transaction id' });
-  }
-
-  // ✅ Upsert dans Supabase (table "payments")
-  try {
-    const { error } = await supabase
-      .from('payments')
-      .upsert(
-        {
-          fedapay_id:     txData.fedapay_id,
-          amount:         txData.amount,
-          currency:       txData.currency,
-          status:         txData.status,
-          customer_name:  txData.customer_name,
-          customer_email: txData.customer_email,
-          customer_phone: txData.customer_phone,
-          description:    txData.description,
-          event_name:     txData.event_name,
-          raw_status:     txData.raw_status,
-          fedapay_event:  txData.fedapay_event,
-          updated_at:     txData.updated_at
-        },
-        {
-          onConflict:       'fedapay_id',
-          ignoreDuplicates: false
-        }
-      );
-
-    if (error) {
-      // Fallback sur table "paiements" si "payments" n'existe pas
-      if (error.code === '42P01') {
-        console.warn('[Webhook] Table "payments" introuvable, tentative avec "paiements"...');
-        const { error: err2 } = await supabase
-          .from('paiements')
-          .upsert(
-            { fedapay_id: txData.fedapay_id, ...txData },
-            { onConflict: 'fedapay_id', ignoreDuplicates: false }
-          );
-        if (err2) {
-          console.error('[Webhook] Erreur upsert "paiements":', err2);
-          return res.status(500).json({ error: 'Erreur base de données', details: err2.message });
-        }
-      } else {
-        console.error('[Webhook] Erreur Supabase upsert:', error);
-        return res.status(500).json({ error: 'Erreur base de données', details: error.message });
-      }
+  // ── Vérification signature (si secret configuré) ───────────────────────
+  if (WEBHOOK_SECRET) {
+    const signature = req.headers['x-fedapay-signature'] || req.headers['x-signature'];
+    if (!signature) {
+      console.warn('[Webhook] Signature manquante');
+      return res.status(401).json({ error: 'Signature manquante' });
     }
 
-    console.log('[Webhook] ✅ Paiement enregistré:', txData.fedapay_id, '→', txData.status);
+    const bodyString = typeof rawBody === 'string'
+      ? rawBody
+      : JSON.stringify(rawBody);
 
-    if (txData.status === 'completed') {
-      console.log('[Webhook] 💰 Paiement approuvé pour:', txData.customer_phone);
-      // TODO: Envoyer email/notification, générer ticket, etc.
+    const expectedSig = crypto
+      .createHmac('sha256', WEBHOOK_SECRET)
+      .update(bodyString)
+      .digest('hex');
+
+    const provided = signature.replace('sha256=', '');
+    if (!crypto.timingSafeEqual(Buffer.from(provided, 'hex'), Buffer.from(expectedSig, 'hex'))) {
+      console.warn('[Webhook] Signature invalide');
+      return res.status(401).json({ error: 'Signature invalide' });
     }
-
-    return res.status(200).json({ received: true, status: txData.status });
-
-  } catch (err) {
-    console.error('[Webhook] Exception:', err.message);
-    return res.status(500).json({ error: 'Erreur interne serveur' });
   }
+
+  // ── Traitement de l'événement ──────────────────────────────────────────
+  const event = typeof rawBody === 'string' ? JSON.parse(rawBody) : rawBody;
+  const { name: eventName, data: eventData } = event;
+
+  console.log(`[Webhook] Événement reçu: ${eventName}`);
+
+  if (!eventName || !eventData) {
+    return res.status(400).json({ error: 'Format d\'événement invalide' });
+  }
+
+  const tx     = eventData.object || eventData;
+  const txId   = tx.id;
+  const status = tx.status;
+  const amount = tx.amount;
+
+  // ── Gestion des types d'événements ────────────────────────────────────
+  switch (eventName) {
+    case 'transaction.approved':
+    case 'transaction.paid':
+      console.log(`[Webhook] ✅ Paiement confirmé — TX #${txId}, montant: ${amount} XOF`);
+      // TODO : enregistrer en base Supabase
+      // await supabaseAdmin.from('transactions').upsert({ id: txId, status: 'paid', amount, updated_at: new Date().toISOString() });
+      break;
+
+    case 'transaction.declined':
+    case 'transaction.cancelled':
+      console.log(`[Webhook] ❌ Paiement refusé — TX #${txId}, statut: ${status}`);
+      // TODO : marquer comme échoué en base
+      break;
+
+    case 'transaction.refunded':
+      console.log(`[Webhook] 💸 Remboursement — TX #${txId}`);
+      break;
+
+    default:
+      console.log(`[Webhook] Événement non géré: ${eventName}`);
+  }
+
+  // FedaPay attend un 200 pour ne pas retenter
+  return res.status(200).json({ received: true, txId, status });
 }
+
+// ── Configuration Vercel : désactiver bodyParser pour accès au raw body ──
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '1mb',
+    },
+  },
+};

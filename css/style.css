@@ -1199,7 +1199,8 @@ body.dark-mode .form-group textarea
 }
 
 body.dark-mode .contact-details ,
-body.dark-mode .contact-info {
+body.dark-mode .contact-info,
+body.dark-mode .faq-section {
     color: black;
     
     
@@ -1403,7 +1404,7 @@ body.dark-mode .payment-form {
 .contact-method:hover { background: rgba(28,30,134,.9); color: var(--white); transform: translateY(-2px); }
 .contact-icon { width: 50px; height: 50px; background: blueviolet; border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center; font-size: var(--font-size-xl); }
 .contact-form-wrapper { background: var(--white); border-radius: var(--radius-xl); padding: var(--spacing-2xl); box-shadow: var(--shadow-md); }
-.faq-section { background: var(--white); border-radius: var(--radius-xl); padding: var(--spacing-2xl); box-shadow: var(--shadow-md); }
+.faq-section { background: var(--dark-bg); border-radius: var(--radius-xl); padding: var(--spacing-2xl); box-shadow: var(--shadow-md); }
 .faq-item { border-bottom: 1px solid var(--gray-200); }
 .faq-question { width: 100%; display: flex; align-items: center; justify-content: space-between; padding: var(--spacing-lg); background: none; border: none; text-align: left; cursor: pointer; }
 .faq-question:hover { background: var(--gray-50); }

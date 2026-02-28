@@ -7,6 +7,7 @@
     <script src="https://unpkg.com/scrollreveal"></script>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/profile.css">
+    <link rel="stylesheet" href="logo-fix.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -154,7 +155,7 @@
                                     <input type="text" id="momo-name" placeholder="Ex : Jean Dupont" required autocomplete="name">
                                 </div>
                                 <div class="form-group">
-                                    <label for="momo-email">E-mail (pour recevoir votre billet) *</label>
+                                    <label for="momo-email">E-mail (pour recevoir votre billet)</label>
                                     <input type="email" id="momo-email" placeholder="votre@email.com" autocomplete="email">
                                 </div>
 
@@ -178,7 +179,6 @@
                                 <button class="btn-primary pay-btn" id="momo-pay-btn" onclick="processMomoPayment()">
                                     <span class="pay-btn-icon">📱</span>
                                     <span class="pay-btn-text">Payer maintenant</span>
-                                    <span class="pay-btn-loader" style="display:none;">⏳</span>
                                 </button>
 
                                 <p class="pay-notice">🔒 Vous serez redirigé vers la page FedaPay sécurisée pour finaliser le paiement. Aucune donnée bancaire n'est transmise à YourPass.</p>
@@ -196,13 +196,12 @@
                             </div>
                             <span class="toggle-icon">▼</span>
                         </button>
-
                         <div id="cards-section" class="payment-content">
                             <div class="payment-form">
                                 <div style="text-align:center;padding:32px 16px;color:#94a3b8;">
                                     <div style="font-size:48px;margin-bottom:12px;">💳</div>
                                     <p style="font-size:14px;font-weight:600;color:#64748b;margin:0 0 6px;">Bientôt disponible</p>
-                                    <p style="font-size:13px;margin:0;">Le paiement par carte bancaire sera disponible prochainement. Utilisez Mobile Money pour l'instant.</p>
+                                    <p style="font-size:13px;margin:0;">Le paiement par carte bancaire sera disponible prochainement.</p>
                                 </div>
                             </div>
                         </div>
@@ -218,7 +217,6 @@
                             </div>
                             <span class="toggle-icon">▼</span>
                         </button>
-
                         <div id="crypto-section" class="payment-content">
                             <div class="payment-form">
                                 <div style="text-align:center;padding:32px 16px;color:#94a3b8;">
@@ -270,9 +268,9 @@
         </div>
     </footer>
 
-    <!-- ✅ Scripts dans le bon ordre -->
+    <!-- ✅ ORDRE CORRECT : CDN Supabase → supabase-auth → events-data → main → profile -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="js/supabase-auth.js"></script>
+    <script src="supabase-auth.js"></script><!-- ✅ Chemin racine corrigé -->
     <script src="js/events-data.js"></script>
     <script src="js/main.js"></script>
     <script src="js/profile.js"></script>
@@ -280,22 +278,22 @@
     <script>
         /* ══════════════════════════════════════════════════════════
            Logique spécifique à paiement.html
-           IMPORTANT : processMomoPayment() est défini dans main.js
-           Ce bloc gère UNIQUEMENT l'affichage du récapitulatif.
+           processMomoPayment() est défini dans main.js
         ══════════════════════════════════════════════════════════ */
 
-        // ── Charger les données de l'événement ──────────────────
         let eventData = {};
         try {
             eventData = JSON.parse(localStorage.getItem('selectedEvent') || '{}');
         } catch { eventData = {}; }
 
-        // Si aucun événement sélectionné → rediriger
+        // Si aucun événement → rediriger vers events.html
         if (!eventData.name && !eventData.price) {
-            console.warn('[Paiement] Aucun événement sélectionné.');
+            console.warn('[Paiement] Aucun événement sélectionné, redirection...');
+            // On laisse 500ms pour que le DOM charge avant de rediriger
+            setTimeout(() => { window.location.href = 'events.html'; }, 500);
         }
 
-        // ── Calcul du total (utilisé par processMomoPayment dans main.js) ──
+        // Calcul du total (utilisé par processMomoPayment dans main.js)
         window.calculateTotal = function () {
             const price = parseInt(eventData.price) || 5000;
             const qty   = parseInt(eventData.quantity) || 1;
@@ -303,7 +301,6 @@
             return price * qty + fees;
         };
 
-        // ── Mise à jour de l'affichage récapitulatif ─────────────
         function updateSummaryDisplay() {
             const price    = parseInt(eventData.price) || 5000;
             const qty      = parseInt(eventData.quantity) || 1;
@@ -311,56 +308,38 @@
             const subtotal = price * qty;
             const fees     = Math.round(subtotal * 0.05);
             const total    = subtotal + fees;
+            const fmt      = n => n.toLocaleString('fr-FR') + ' XOF';
 
-            const fmt = n => n.toLocaleString('fr-FR') + ' XOF';
+            const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
 
-            // Nom événement
-            const nameEl = document.getElementById('event-name');
-            if (nameEl) nameEl.textContent = eventData.name || 'Votre billet';
+            set('event-name',        eventData.name || 'Votre billet');
+            set('event-ticket-type', `${qty} billet${qty > 1 ? 's' : ''} ${type}`);
+            set('event-price',       fmt(price * qty));
+            set('subtotal',          fmt(subtotal));
+            set('fees',              fmt(fees));
+            set('total',             fmt(total));
+            set('recap-total',       fmt(total));
 
-            // Type + quantité
-            const typeEl = document.getElementById('event-ticket-type');
-            if (typeEl) typeEl.textContent = `${qty} billet${qty > 1 ? 's' : ''} ${type}`;
-
-            // Date
             if (eventData.date) {
-                const dateEl = document.getElementById('event-date');
-                if (dateEl) dateEl.textContent = new Date(eventData.date).toLocaleDateString('fr-FR', {
+                set('event-date', new Date(eventData.date).toLocaleDateString('fr-FR', {
                     day: 'numeric', month: 'long', year: 'numeric'
-                });
+                }));
             }
-
-            // Lieu
-            const venueEl = document.getElementById('event-venue');
-            if (venueEl && eventData.venue) {
-                venueEl.textContent = `📍 ${eventData.venue}${eventData.location ? ', ' + eventData.location : ''}`;
+            if (eventData.venue) {
+                set('event-venue', `📍 ${eventData.venue}${eventData.location ? ', ' + eventData.location : ''}`);
             }
-
-            // Montants
-            document.getElementById('event-price').textContent = fmt(price * qty);
-            document.getElementById('subtotal').textContent    = fmt(subtotal);
-            document.getElementById('fees').textContent        = fmt(fees);
-            document.getElementById('total').textContent       = fmt(total);
-
-            // Récapitulatif dans le formulaire
-            const recapEl = document.getElementById('recap-total');
-            if (recapEl) recapEl.textContent = fmt(total);
         }
 
-        // Lancer au chargement
         document.addEventListener('DOMContentLoaded', updateSummaryDisplay);
-        // Aussi si le DOM est déjà prêt
         if (document.readyState !== 'loading') updateSummaryDisplay();
     </script>
 
     <style>
-        /* ── Paiement page styles ────────────────────────────── */
         .payment-header {
             padding: 120px 0 var(--spacing-xl);
             background: linear-gradient(135deg, rgba(107, 255, 243, 0.9), rgba(28, 30, 134, 0.9));
-            position: relative;
+            color: var(--white);
         }
-
         .payment-breadcrumb {
             margin-bottom: var(--spacing-md);
             font-size: var(--font-size-sm);
@@ -368,352 +347,86 @@
             gap: 8px;
             align-items: center;
             flex-wrap: wrap;
-        }
-
-        .payment-breadcrumb a {
             color: rgba(255,255,255,0.8);
-            text-decoration: none;
-            transition: opacity 0.15s;
         }
-        .payment-breadcrumb a:hover { opacity: 1; color: #fff; }
-        .payment-breadcrumb span:not(:last-child) { opacity: 0.5; }
+        .payment-breadcrumb a { color: rgba(255,255,255,0.8); text-decoration: none; }
+        .payment-breadcrumb a:hover { color: #fff; }
+        .payment-header h1 { font-size: var(--font-size-3xl); font-weight: 800; margin-bottom: var(--spacing-sm); }
+        .payment-header p  { font-size: var(--font-size-lg); opacity: 0.9; }
 
-        .payment-header h1 {
-            font-size: var(--font-size-3xl);
-            font-weight: 800;
-            margin-bottom: var(--spacing-sm);
-        }
+        .payment-main    { padding: var(--spacing-2xl) 0 var(--spacing-3xl); background: var(--gray-50); }
+        .payment-layout  { display: grid; grid-template-columns: 1fr 2fr; gap: var(--spacing-2xl); max-width: 1100px; margin: 0 auto; }
 
-        .payment-header p {
-            font-size: var(--font-size-lg);
-            opacity: 0.9;
-        }
+        .order-summary   { background: var(--white); border-radius: var(--radius-xl); padding: var(--spacing-xl); box-shadow: var(--shadow-md); height: fit-content; position: sticky; top: 100px; }
+        .order-summary h2 { font-size: var(--font-size-xl); font-weight: 700; margin-bottom: var(--spacing-lg); color: var(--gray-800); }
 
-        .payment-main {
-            padding: var(--spacing-2xl) 0 var(--spacing-3xl);
-            background: var(--gray-50);
-        }
+        .order-item { display: flex; justify-content: space-between; align-items: flex-start; padding: var(--spacing-md) 0; border-bottom: 1px solid var(--gray-200); gap: var(--spacing-md); }
+        .item-info h3 { font-size: var(--font-size-base); font-weight: 600; color: var(--gray-800); margin-bottom: 4px; }
+        .item-info p  { font-size: var(--font-size-sm); color: var(--gray-500); margin: 2px 0; }
+        .item-price strong { font-size: var(--font-size-lg); font-weight: 700; white-space: nowrap; }
 
-        .payment-layout {
-            display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: var(--spacing-2xl);
-            max-width: 1100px;
-            margin: 0 auto;
-        }
+        .order-totals { padding-top: var(--spacing-lg); margin-bottom: var(--spacing-lg); }
+        .total-row { display: flex; justify-content: space-between; font-size: var(--font-size-sm); color: var(--gray-600); margin-bottom: var(--spacing-sm); }
+        .total-row.final { font-size: var(--font-size-base); font-weight: 700; color: #1C4DB8; padding-top: var(--spacing-sm); border-top: 2px solid var(--gray-200); margin-top: var(--spacing-sm); }
 
-        /* ── Récapitulatif ────────────────────── */
-        .order-summary {
-            background: var(--white);
-            border-radius: var(--radius-xl);
-            padding: var(--spacing-xl);
-            box-shadow: var(--shadow-md);
-            height: fit-content;
-            position: sticky;
-            top: 100px;
-        }
+        .payment-security { display: flex; flex-direction: column; gap: 6px; }
+        .security-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--gray-500); }
 
-        .order-summary h2 {
-            font-size: var(--font-size-xl);
-            font-weight: 700;
-            margin-bottom: var(--spacing-lg);
-            color: var(--gray-800);
-        }
+        .payment-methods  { background: var(--white); border-radius: var(--radius-xl); padding: var(--spacing-xl); box-shadow: var(--shadow-md); }
+        .payment-methods h2 { font-size: var(--font-size-xl); font-weight: 700; margin-bottom: var(--spacing-lg); color: var(--gray-800); }
 
-        .order-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            padding: var(--spacing-md) 0;
-            border-bottom: 1px solid var(--gray-200);
-            gap: var(--spacing-md);
-        }
+        .payment-section { margin-bottom: var(--spacing-md); border: 2px solid var(--gray-200); border-radius: var(--radius-lg); overflow: hidden; transition: border-color 0.2s ease; }
+        .payment-section:has(.payment-content.active) { border-color: #4988C4; }
 
-        .item-info h3 {
-            font-size: var(--font-size-base);
-            font-weight: 600;
-            color: var(--gray-800);
-            margin-bottom: 4px;
-        }
-
-        .item-info p {
-            font-size: var(--font-size-sm);
-            color: var(--gray-500);
-            margin: 2px 0;
-        }
-
-        .item-price strong {
-            font-size: var(--font-size-lg);
-            font-weight: 700;
-            white-space: nowrap;
-        }
-
-        .order-totals {
-            padding-top: var(--spacing-lg);
-            margin-bottom: var(--spacing-lg);
-        }
-
-        .total-row {
-            display: flex;
-            justify-content: space-between;
-            font-size: var(--font-size-sm);
-            color: var(--gray-600);
-            margin-bottom: var(--spacing-sm);
-        }
-
-        .total-row.final {
-            font-size: var(--font-size-base);
-            font-weight: 700;
-            color: #1C4DB8;
-            padding-top: var(--spacing-sm);
-            border-top: 2px solid var(--gray-200);
-            margin-top: var(--spacing-sm);
-        }
-
-        .payment-security {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .security-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 12px;
-            color: var(--gray-500);
-        }
-
-        /* ── Méthodes de paiement ─────────────── */
-        .payment-methods {
-            background: var(--white);
-            border-radius: var(--radius-xl);
-            padding: var(--spacing-xl);
-            box-shadow: var(--shadow-md);
-        }
-
-        .payment-methods h2 {
-            font-size: var(--font-size-xl);
-            font-weight: 700;
-            margin-bottom: var(--spacing-lg);
-            color: var(--gray-800);
-        }
-
-        .payment-section {
-            margin-bottom: var(--spacing-md);
-            border: 2px solid var(--gray-200);
-            border-radius: var(--radius-lg);
-            overflow: hidden;
-            transition: border-color 0.2s ease;
-        }
-
-        .payment-section:has(.payment-content.active) {
-            border-color: #4988C4;
-        }
-
-        .payment-header-btn {
-            width: 100%;
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-md);
-            padding: var(--spacing-lg);
-            background: var(--white);
-            border: none;
-            cursor: pointer;
-            transition: background 0.15s ease;
-        }
-
+        .payment-header-btn { width: 100%; display: flex; align-items: center; gap: var(--spacing-md); padding: var(--spacing-lg); background: var(--white); border: none; cursor: pointer; transition: background 0.15s ease; }
         .payment-header-btn:hover { background: var(--gray-50); }
 
-        .payment-icon {
-            width: 46px;
-            height: 46px;
-            background: var(--gray-100);
-            border-radius: var(--radius-lg);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.4rem;
-            flex-shrink: 0;
-        }
-
+        .payment-icon { width: 46px; height: 46px; background: var(--gray-100); border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0; }
         .payment-info { flex: 1; text-align: left; }
+        .payment-info h3 { font-size: var(--font-size-base); font-weight: 600; color: var(--gray-800); margin-bottom: 2px; }
+        .payment-info p  { font-size: var(--font-size-sm); color: var(--gray-500); margin: 0; }
+        .toggle-icon { font-size: 0.7rem; color: var(--gray-400); }
 
-        .payment-info h3 {
-            font-size: var(--font-size-base);
-            font-weight: 600;
-            color: var(--gray-800);
-            margin-bottom: 2px;
-        }
+        .payment-content { max-height: 0; overflow: hidden; transition: max-height 0.35s ease-out; }
+        .payment-content.active { max-height: 1200px; transition: max-height 0.5s ease-in; }
 
-        .payment-info p {
-            font-size: var(--font-size-sm);
-            color: var(--gray-500);
-            margin: 0;
-        }
+        .payment-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: var(--spacing-sm); padding: var(--spacing-lg); border-bottom: 1px solid var(--gray-200); }
+        .payment-option { display: flex; align-items: center; gap: 10px; padding: var(--spacing-md); background: var(--gray-50); border: 2px solid transparent; border-radius: var(--radius-lg); cursor: pointer; transition: all 0.15s ease; }
+        .payment-option:hover { background: var(--white); border-color: var(--gray-300); transform: translateY(-1px); }
+        .payment-option.active { background: #4988C4; color: var(--white); border-color: #1C4D8D; }
 
-        .toggle-icon {
-            font-size: 0.7rem;
-            color: var(--gray-400);
-            transition: transform 0.25s ease;
-        }
-
-        .payment-content {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.35s ease-out;
-        }
-
-        .payment-content.active {
-            max-height: 1200px;
-            transition: max-height 0.5s ease-in;
-        }
-
-        .payment-options {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: var(--spacing-sm);
-            padding: var(--spacing-lg);
-            border-bottom: 1px solid var(--gray-200);
-        }
-
-        .payment-option {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: var(--spacing-md);
-            background: var(--gray-50);
-            border: 2px solid transparent;
-            border-radius: var(--radius-lg);
-            cursor: pointer;
-            transition: all 0.15s ease;
-        }
-
-        .payment-option:hover {
-            background: var(--white);
-            border-color: var(--gray-300);
-            transform: translateY(-1px);
-        }
-
-        .payment-option.active {
-            background: #4988C4;
-            color: var(--white);
-            border-color: #1C4D8D;
-        }
-
-        .option-logo {
-            width: 36px;
-            height: 36px;
-            background: var(--white);
-            border-radius: var(--radius-md);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.1rem;
-            flex-shrink: 0;
-        }
-
+        .option-logo { width: 36px; height: 36px; background: var(--white); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
         .option-info { text-align: left; }
         .option-info h4 { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
         .option-info p  { font-size: 11px; opacity: 0.75; margin: 0; }
 
-        .payment-form {
-            padding: var(--spacing-lg);
-            background: var(--gray-50);
-        }
-
+        .payment-form { padding: var(--spacing-lg); background: var(--gray-50); }
         .form-group { margin-bottom: var(--spacing-lg); }
+        .form-group label { display: block; font-weight: 600; margin-bottom: var(--spacing-sm); color: var(--gray-700); font-size: var(--font-size-sm); }
+        .form-group input { width: 100%; padding: var(--spacing-md); border: 2px solid var(--gray-200); border-radius: var(--radius-lg); font-size: var(--font-size-base); transition: border-color 0.15s ease, box-shadow 0.15s ease; background: var(--white); font-family: inherit; }
+        .form-group input:focus { outline: none; border-color: #1C4DB8; box-shadow: 0 0 0 3px rgba(73, 136, 196, 0.15); }
 
-        .form-group label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: var(--spacing-sm);
-            color: var(--gray-700);
-            font-size: var(--font-size-sm);
-        }
+        .pay-btn { width: 100%; padding: 14px var(--spacing-xl); font-size: var(--font-size-base); font-weight: 700; border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: var(--spacing-md); cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease; }
+        .pay-btn:disabled { opacity: 0.65; cursor: not-allowed; transform: none !important; }
+        .pay-notice { font-size: 11.5px; color: var(--gray-500); text-align: center; line-height: 1.6; }
 
-        .form-group input {
-            width: 100%;
-            padding: var(--spacing-md);
-            border: 2px solid var(--gray-200);
-            border-radius: var(--radius-lg);
-            font-size: var(--font-size-base);
-            transition: border-color 0.15s ease, box-shadow 0.15s ease;
-            background: var(--white);
-            font-family: inherit;
-        }
-
-        .form-group input:focus {
-            outline: none;
-            border-color: #1C4DB8;
-            box-shadow: 0 0 0 3px rgba(73, 136, 196, 0.15);
-        }
-
-        .pay-btn {
-            width: 100%;
-            padding: 14px var(--spacing-xl);
-            font-size: var(--font-size-base);
-            font-weight: 700;
-            border-radius: var(--radius-xl);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            margin-bottom: var(--spacing-md);
-            transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
-            cursor: pointer;
-        }
-
-        .pay-btn:disabled {
-            opacity: 0.65;
-            cursor: not-allowed;
-            transform: none !important;
-        }
-
-        .pay-notice {
-            font-size: 11.5px;
-            color: var(--gray-500);
-            text-align: center;
-            line-height: 1.6;
-        }
-
-        /* ── Dark mode ────────────────────────── */
+        /* Dark mode */
         body.dark-mode .payment-methods,
-        body.dark-mode .order-summary {
-            background: var(--dark-surface);
-            border-color: var(--dark-border);
-        }
-
+        body.dark-mode .order-summary { background: var(--dark-surface); border-color: var(--dark-border); }
         body.dark-mode .payment-header-btn { background: var(--dark-surface); }
         body.dark-mode .payment-header-btn:hover { background: var(--dark-bg); }
         body.dark-mode .payment-form { background: var(--dark-bg); }
-
-        body.dark-mode .form-group input {
-            background: var(--dark-surface);
-            border-color: var(--dark-border);
-            color: var(--dark-text);
-        }
-
+        body.dark-mode .form-group input { background: var(--dark-surface); border-color: var(--dark-border); color: var(--dark-text); }
         body.dark-mode .payment-info h3,
         body.dark-mode .order-summary h2,
         body.dark-mode .payment-methods h2,
         body.dark-mode .item-info h3 { color: #fff; }
-
-        body.dark-mode .payment-option {
-            background: var(--dark-bg);
-            border-color: var(--dark-border);
-            color: var(--dark-text);
-        }
-
+        body.dark-mode .payment-option { background: var(--dark-bg); border-color: var(--dark-border); color: var(--dark-text); }
         body.dark-mode .total-row.final { color: #93c5fd; }
 
-        /* ── Responsive ───────────────────────── */
         @media (max-width: 768px) {
-            .payment-layout {
-                grid-template-columns: 1fr;
-                gap: var(--spacing-xl);
-            }
-            .order-summary { position: static; }
+            .payment-layout { grid-template-columns: 1fr; gap: var(--spacing-xl); }
+            .order-summary  { position: static; }
             .payment-options { grid-template-columns: 1fr; }
         }
     </style>
