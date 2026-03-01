@@ -10,7 +10,6 @@ function togglePaymentSection(name) {
   const section = document.getElementById(`${name}-section`);
   if (!section) return;
   const isActive = section.classList.contains('active');
-  // Fermer toutes
   document.querySelectorAll('.payment-content').forEach(el => el.classList.remove('active'));
   if (!isActive) section.classList.add('active');
 }
@@ -26,7 +25,6 @@ function selectPaymentOption(btn, provider) {
 
 // ─── Validation numéro de téléphone béninois ──────────────────────────────
 function validatePhone(phone) {
-  // Accepte : 8 chiffres locaux, ou +229XXXXXXXX, ou 229XXXXXXXX
   const cleaned = phone.replace(/[\s\-\.]/g, '');
   return /^(\+?229)?[0-9]{8}$/.test(cleaned);
 }
@@ -82,13 +80,12 @@ async function processMomoPayment() {
   const fees     = Math.round(price * qty * 0.05);
   const total    = price * qty + fees;
 
-  // ── Calcul total via fonction si disponible (paiement.html l'expose) ──
   const finalTotal = typeof window.calculateTotal === 'function'
     ? window.calculateTotal()
     : total;
 
-  // ── Sauvegarder les données de paiement pour success.html ──
-  localStorage.setItem('pendingPayment', JSON.stringify({
+  // ── ✅ CORRECTION : Sauvegarder AVANT l'appel API (transaction_id ajouté après) ──
+  const pendingData = {
     name,
     email,
     phone: normalizePhone(phone),
@@ -96,7 +93,8 @@ async function processMomoPayment() {
     eventId: eventData.id,
     provider: window._selectedProvider || 'mtn',
     timestamp: Date.now(),
-  }));
+  };
+  localStorage.setItem('pendingPayment', JSON.stringify(pendingData));
 
   // ── UI : loading ──
   if (payBtn) {
@@ -138,13 +136,23 @@ async function processMomoPayment() {
       throw new Error('URL de paiement FedaPay non reçue');
     }
 
+    // ── ✅ CORRECTION CRITIQUE : Sauvegarder transaction_id AVANT la redirection ──
+    // success.html en a besoin pour vérifier le statut du paiement
+    const txId = data.transaction_id || data.id || '';
+    if (txId) {
+      localStorage.setItem('yourpass_pending_tx', String(txId));
+      // Mettre à jour pendingPayment avec le transaction_id
+      pendingData.transaction_id = String(txId);
+      localStorage.setItem('pendingPayment', JSON.stringify(pendingData));
+      console.log('[Main] transaction_id sauvegardé :', txId);
+    }
+
     // ── Redirection vers FedaPay ──
     window.location.href = data.payment_url || data.url;
 
   } catch (err) {
     console.error('[Main] Erreur paiement:', err.message);
 
-    // Restaurer le bouton
     if (payBtn) {
       payBtn.disabled = false;
       const btnText = payBtn.querySelector('.pay-btn-text');
@@ -168,7 +176,6 @@ function showFormError(message, inputEl) {
 }
 
 function showPaymentError(message) {
-  // Chercher ou créer un élément d'erreur
   let el = document.getElementById('payment-error-banner');
   if (!el) {
     el = document.createElement('div');
@@ -189,7 +196,6 @@ function showPaymentError(message) {
 
 // ─── Initialisation navbar / thème ───────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  // Thème
   const savedTheme = localStorage.getItem('theme');
   if (savedTheme === 'dark') {
     document.body.classList.add('dark-mode');
@@ -197,7 +203,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (icon) icon.textContent = '🌙';
   }
 
-  // Toggle thème
   const themeBtn = document.querySelector('.theme-toggle');
   if (themeBtn) {
     themeBtn.addEventListener('click', () => {
@@ -208,7 +213,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Menu mobile
   const menuToggle = document.querySelector('.menu-toggle');
   const navMenu    = document.getElementById('navMenu');
   if (menuToggle && navMenu) {
@@ -218,14 +222,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Fermer menu au clic lien
   document.querySelectorAll('.nav-link').forEach(link => {
     link.addEventListener('click', () => {
       if (navMenu) navMenu.classList.remove('open');
     });
   });
 
-  // Marquer lien actif
   const currentPath = window.location.pathname.split('/').pop() || 'index.html';
   document.querySelectorAll('.nav-link').forEach(link => {
     const href = link.getAttribute('href');

@@ -23,7 +23,6 @@
             padding: 100px 16px 48px;
         }
 
-        /* ── États de chargement / erreur ── */
         .state-card {
             background: #fff;
             border-radius: 20px;
@@ -37,7 +36,6 @@
         .state-title { font-size: 22px; font-weight: 800; color: #111827; margin-bottom: 8px; }
         .state-msg   { font-size: 14px; color: #6b7280; line-height: 1.6; }
 
-        /* ── Spinner ── */
         .spinner {
             width: 48px; height: 48px;
             border: 4px solid #e5e7eb;
@@ -48,12 +46,7 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* ── Billet / Ticket card ── */
-        .ticket-wrap {
-            width: 100%;
-            max-width: 540px;
-        }
-
+        .ticket-wrap { width: 100%; max-width: 540px; }
         .ticket-card {
             background: #fff;
             border-radius: 20px;
@@ -82,7 +75,6 @@
         .ticket-header h1 { font-size: 22px; font-weight: 800; margin: 0 0 4px; }
         .ticket-header p  { font-size: 14px; opacity: 0.85; margin: 0; }
 
-        /* Déchirure de billet */
         .ticket-tear {
             height: 20px;
             background:
@@ -93,7 +85,6 @@
         }
 
         .ticket-body { padding: 24px 28px; }
-
         .event-title { font-size: 18px; font-weight: 700; color: #111827; margin: 0 0 4px; }
         .event-meta  { font-size: 13px; color: #6b7280; margin: 0 0 20px; }
 
@@ -103,11 +94,7 @@
             gap: 12px;
             margin-bottom: 20px;
         }
-        .info-block {
-            background: #f9fafb;
-            border-radius: 10px;
-            padding: 12px 14px;
-        }
+        .info-block { background: #f9fafb; border-radius: 10px; padding: 12px 14px; }
         .info-label { font-size: 11px; font-weight: 600; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
         .info-value { font-size: 14px; font-weight: 600; color: #111827; }
         .info-value.mono { font-family: monospace; font-size: 12px; color: #374151; word-break: break-all; }
@@ -124,7 +111,6 @@
         .qr-sublabel { font-size: 11px; color: #9ca3af; margin-top: 8px; }
 
         .ticket-footer { padding: 16px 28px 24px; }
-
         .email-badge {
             display: flex; align-items: center; gap: 8px;
             background: #eff6ff; border: 1px solid #bfdbfe;
@@ -133,7 +119,6 @@
         }
 
         .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
-
         .btn-primary-solid {
             flex: 1; min-width: 140px;
             background: linear-gradient(135deg, #1C4DB8, #4988C4);
@@ -144,7 +129,6 @@
             justify-content: center; gap: 6px;
         }
         .btn-primary-solid:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(28,77,184,0.3); }
-
         .btn-outline {
             flex: 1; min-width: 140px;
             background: #fff; color: #374151;
@@ -156,7 +140,6 @@
         }
         .btn-outline:hover { border-color: #1C4DB8; color: #1C4DB8; }
 
-        /* Dark mode */
         body.dark-mode .state-card,
         body.dark-mode .ticket-card { background: var(--dark-surface, #1f2937); }
         body.dark-mode .ticket-tear { background-color: var(--dark-border, #374151); }
@@ -177,7 +160,6 @@
 </head>
 <body>
 
-    <!-- Navbar -->
     <nav class="navbar">
         <div class="nav-container">
             <div class="logo">
@@ -213,13 +195,10 @@
                     <h1>Paiement confirmé !</h1>
                     <p>Votre billet a été émis avec succès</p>
                 </div>
-
                 <div class="ticket-tear"></div>
-
                 <div class="ticket-body">
                     <h2 class="event-title" id="t-event-name">—</h2>
                     <p class="event-meta" id="t-event-meta">—</p>
-
                     <div class="ticket-info-grid">
                         <div class="info-block">
                             <div class="info-label">Titulaire</div>
@@ -246,20 +225,17 @@
                             <div class="info-value mono" id="t-tx-id">—</div>
                         </div>
                     </div>
-
                     <div class="qr-section">
                         <p class="qr-label">📱 QR Code — Présentez à l'entrée</p>
                         <canvas id="qr-canvas"></canvas>
                         <p class="qr-sublabel" id="t-ticket-id-small">—</p>
                     </div>
                 </div>
-
                 <div class="ticket-footer">
                     <div class="email-badge" id="email-badge" style="display:none;">
                         <span>📧</span>
                         <span>Billet envoyé à <strong id="t-email">—</strong></span>
                     </div>
-
                     <div class="btn-group">
                         <button class="btn-primary-solid" onclick="printTicket()">🖨️ Imprimer</button>
                         <a href="dashboard.html" class="btn-outline">📁 Mes billets</a>
@@ -286,7 +262,6 @@
 
     </main>
 
-    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-auth.js"></script>
     <script src="js/profile.js"></script>
@@ -294,15 +269,30 @@
     <script>
     /* ═══════════════════════════════════════════════════════════════
        success.js — Logique de vérification et affichage du billet
+       ✅ CORRECTION : transactionId récupéré depuis URL OU localStorage
     ═══════════════════════════════════════════════════════════════ */
 
-    const params        = new URLSearchParams(window.location.search);
-    const transactionId = params.get('id') || params.get('transaction_id');
-    let retryCount      = 0;
-    const MAX_RETRIES   = 15;
-    const RETRY_DELAY   = 2000; // ms
+    const params = new URLSearchParams(window.location.search);
 
-    // Données événement stockées au moment de l'achat
+    // ✅ CORRECTION CRITIQUE : fallback sur localStorage si l'URL ne contient pas l'ID
+    // FedaPay ne transmet pas toujours ?id= dans la callback_url
+    const transactionId =
+        params.get('id') ||
+        params.get('transaction_id') ||
+        params.get('trx') ||
+        localStorage.getItem('yourpass_pending_tx') ||
+        (() => {
+            try {
+                return JSON.parse(localStorage.getItem('pendingPayment') || '{}').transaction_id || null;
+            } catch { return null; }
+        })();
+
+    console.log('[Success] transactionId résolu :', transactionId);
+
+    let retryCount   = 0;
+    const MAX_RETRIES  = 15;
+    const RETRY_DELAY  = 2000;
+
     let eventData = {};
     try { eventData = JSON.parse(localStorage.getItem('selectedEvent') || '{}'); } catch {}
 
@@ -344,14 +334,12 @@
         set('t-ticket-id-small', ticketId);
         set('t-tx-id', transactionId || '—');
 
-        // Afficher badge email
         const email = paymentData.email || '';
         if (email) {
             document.getElementById('email-badge').style.display = 'flex';
             set('t-email', email);
         }
 
-        // Générer QR Code
         const qrPayload = JSON.stringify({
             id: ticketId,
             tx: transactionId,
@@ -371,14 +359,11 @@
 
         showState('state-success');
 
-        // Envoyer billet par email en arrière-plan
-        if (email) {
-            sendTicketEmail({ ticketId, email, total });
-        }
+        if (email) sendTicketEmail({ ticketId, email, total });
 
-        // Nettoyer localStorage
+        // ✅ Nettoyer localStorage après succès
         localStorage.removeItem('pendingPayment');
-        // Garder selectedEvent pour affichage
+        localStorage.removeItem('yourpass_pending_tx');
     }
 
     // ─── Envoi email billet ──────────────────────────────────────
@@ -408,7 +393,8 @@
     async function verifyPayment() {
         if (!transactionId) {
             document.getElementById('error-title').textContent = 'Identifiant de transaction manquant';
-            document.getElementById('error-msg').textContent   = 'Aucun identifiant de transaction trouvé. Revenez à vos événements.';
+            document.getElementById('error-msg').textContent   =
+                'Aucun identifiant de transaction trouvé. Si vous avez payé, contactez le support avec votre numéro de téléphone.';
             showState('state-error');
             return;
         }
@@ -422,13 +408,14 @@
 
             if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
 
+            // ✅ CORRECTION : accepter tous les statuts de succès FedaPay
             const status = (data.status || '').toLowerCase();
+            console.log('[Success] Statut reçu :', status);
 
-            if (status === 'approved' || status === 'paid' || status === 'successful') {
+            if (status === 'approved' || status === 'paid' || status === 'successful' || status === 'completed') {
                 await showTicket(data);
 
-            } else if (status === 'pending' || status === 'processing') {
-                // Retry
+            } else if (status === 'pending' || status === 'processing' || status === 'new') {
                 retryCount++;
                 if (retryCount < MAX_RETRIES) {
                     document.getElementById('loading-msg').textContent =
@@ -441,14 +428,13 @@
                     showState('state-error');
                 }
 
-            } else if (status === 'declined' || status === 'cancelled' || status === 'failed') {
+            } else if (status === 'declined' || status === 'cancelled' || status === 'failed' || status === 'error') {
                 document.getElementById('error-title').textContent = 'Paiement refusé';
                 document.getElementById('error-msg').textContent =
                     `La transaction a été refusée ou annulée (statut : ${status}). Aucun débit n'a été effectué.`;
                 showState('state-error');
 
             } else {
-                // Statut inconnu — réessayer
                 retryCount++;
                 if (retryCount < MAX_RETRIES) {
                     setTimeout(verifyPayment, RETRY_DELAY);
@@ -466,7 +452,7 @@
                 setTimeout(verifyPayment, RETRY_DELAY * 1.5);
             } else {
                 document.getElementById('error-msg').textContent =
-                    `Erreur réseau : ${err.message}. Votre paiement a peut-être été traité. Contactez le support avec l'ID : ${transactionId}`;
+                    `Erreur réseau. Votre paiement a peut-être été traité. Contactez le support avec l'ID : ${transactionId}`;
                 showState('state-error');
             }
         }
@@ -478,25 +464,13 @@
         verifyPayment();
     }
 
-    function printTicket() {
-        window.print();
-    }
+    function printTicket() { window.print(); }
 
-    // ─── Démarrage ───────────────────────────────────────────────
     document.addEventListener('DOMContentLoaded', () => {
         showState('state-loading');
         verifyPayment();
     });
     </script>
-
-    <!-- Styles impression -->
-    <style>
-    @media print {
-        .navbar, .btn-group, .email-badge { display: none !important; }
-        .success-page { padding: 0; }
-        .ticket-card  { box-shadow: none; border: 2px solid #e5e7eb; }
-    }
-    </style>
 
 </body>
 </html>
