@@ -13,7 +13,6 @@
     <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
     <style>
         * { box-sizing: border-box; }
-
         .success-page {
             min-height: 100vh;
             background: var(--gray-50, #f9fafb);
@@ -22,7 +21,6 @@
             align-items: center;
             padding: 100px 16px 48px;
         }
-
         .state-card {
             background: #fff;
             border-radius: 20px;
@@ -30,131 +28,32 @@
             max-width: 520px;
             width: 100%;
             text-align: center;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05);
+            display: none;
         }
-        .state-icon { font-size: 64px; margin-bottom: 16px; }
-        .state-title { font-size: 22px; font-weight: 800; color: #111827; margin-bottom: 8px; }
-        .state-msg   { font-size: 14px; color: #6b7280; line-height: 1.6; }
-
-        .spinner {
-            width: 48px; height: 48px;
-            border: 4px solid #e5e7eb;
-            border-top-color: #1C4DB8;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin: 0 auto 20px;
+        .state-card.active { display: block; animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .icon-box { width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; }
+        .icon-success { background: #ecfdf5; color: #10b981; }
+        .icon-error { background: #fef2f2; color: #ef4444; }
+        
+        .loader { border: 3px solid #f3f3f3; border-top: 3px solid #2563eb; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 0 auto 20px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .btn-primary { 
+            background: #2563eb; color: white; border: none; padding: 14px 28px; 
+            border-radius: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; 
+            text-decoration: none; display: inline-block; margin-top: 20px;
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        .ticket-wrap { width: 100%; max-width: 540px; }
-        .ticket-card {
-            background: #fff;
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 8px 32px rgba(28, 77, 184, 0.12);
-            margin-bottom: 20px;
-        }
-
-        .ticket-header {
-            background: linear-gradient(135deg, #1C4DB8 0%, #4988C4 100%);
-            color: #fff;
-            padding: 28px 28px 24px;
-            text-align: center;
-        }
-        .success-animation {
-            width: 72px; height: 72px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 36px;
-            margin: 0 auto 14px;
-            animation: popIn 0.5s cubic-bezier(0.34,1.56,0.64,1);
-        }
-        @keyframes popIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-
-        .ticket-header h1 { font-size: 22px; font-weight: 800; margin: 0 0 4px; }
-        .ticket-header p  { font-size: 14px; opacity: 0.85; margin: 0; }
-
-        .ticket-tear {
-            height: 20px;
-            background:
-                radial-gradient(circle at 0 50%, transparent 12px, #fff 12px) left / 30px 100%,
-                radial-gradient(circle at 100% 50%, transparent 12px, #fff 12px) right / 30px 100%;
-            background-color: #e5e7eb;
-            background-repeat: no-repeat;
-        }
-
-        .ticket-body { padding: 24px 28px; }
-        .event-title { font-size: 18px; font-weight: 700; color: #111827; margin: 0 0 4px; }
-        .event-meta  { font-size: 13px; color: #6b7280; margin: 0 0 20px; }
-
-        .ticket-info-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-        .info-block { background: #f9fafb; border-radius: 10px; padding: 12px 14px; }
-        .info-label { font-size: 11px; font-weight: 600; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
-        .info-value { font-size: 14px; font-weight: 600; color: #111827; }
-        .info-value.mono { font-family: monospace; font-size: 12px; color: #374151; word-break: break-all; }
-
-        .qr-section {
-            text-align: center;
-            padding: 20px;
-            background: #f9fafb;
-            border-radius: 12px;
-            margin-bottom: 20px;
-        }
-        .qr-label   { font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 12px; }
-        #qr-canvas  { border-radius: 8px; }
-        .qr-sublabel { font-size: 11px; color: #9ca3af; margin-top: 8px; }
-
-        .ticket-footer { padding: 16px 28px 24px; }
-        .email-badge {
-            display: flex; align-items: center; gap: 8px;
-            background: #eff6ff; border: 1px solid #bfdbfe;
-            border-radius: 10px; padding: 12px 14px;
-            font-size: 13px; color: #1d4ed8; margin-bottom: 16px;
-        }
-
-        .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
-        .btn-primary-solid {
-            flex: 1; min-width: 140px;
-            background: linear-gradient(135deg, #1C4DB8, #4988C4);
-            color: #fff; border: none; border-radius: 12px;
-            padding: 13px 20px; font-size: 14px; font-weight: 700;
-            cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease;
-            text-decoration: none; display: flex; align-items: center;
-            justify-content: center; gap: 6px;
-        }
-        .btn-primary-solid:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(28,77,184,0.3); }
-        .btn-outline {
-            flex: 1; min-width: 140px;
-            background: #fff; color: #374151;
-            border: 2px solid #e5e7eb; border-radius: 12px;
-            padding: 13px 20px; font-size: 14px; font-weight: 600;
-            cursor: pointer; transition: all 0.15s ease;
-            text-decoration: none; display: flex; align-items: center;
-            justify-content: center; gap: 6px;
-        }
-        .btn-outline:hover { border-color: #1C4DB8; color: #1C4DB8; }
-
-        body.dark-mode .state-card,
-        body.dark-mode .ticket-card { background: var(--dark-surface, #1f2937); }
-        body.dark-mode .ticket-tear { background-color: var(--dark-border, #374151); }
-        body.dark-mode .info-block,
-        body.dark-mode .qr-section  { background: var(--dark-bg, #111827); }
-        body.dark-mode .event-title,
-        body.dark-mode .info-value  { color: #f9fafb; }
-        body.dark-mode .state-title { color: #f9fafb; }
-        body.dark-mode .btn-outline { background: var(--dark-surface, #1f2937); border-color: var(--dark-border, #374151); color: var(--dark-text, #d1d5db); }
-
-        @media (max-width: 480px) {
-            .ticket-info-grid { grid-template-columns: 1fr; }
-            .success-page { padding-top: 80px; }
-            .ticket-body, .ticket-footer { padding-left: 18px; padding-right: 18px; }
-            .ticket-header { padding: 20px 18px; }
+        .btn-primary:hover { background: #1d4ed8; }
+        
+        #qrcode-canvas { margin: 20px auto; max-width: 100%; }
+        
+        @media print {
+            .navbar, .btn-primary, .nav-menu { display: none !important; }
+            .success-page { padding: 0; background: white; }
+            .state-card { box-shadow: none; border: 1px solid #eee; }
         }
     </style>
 </head>
@@ -165,312 +64,110 @@
             <div class="logo">
                 <img src="image video/téléchargement (1).png" alt="YourPass Logo">
             </div>
-            <ul class="nav-menu" id="navMenu">
-                <li><a href="index.html" class="nav-link">Accueil</a></li>
-                <li><a href="events.html" class="nav-link">Événements</a></li>
-                <li><a href="dashboard.html" class="nav-link">Mon espace</a></li>
-                <div class="nav-indicator"></div>
-            </ul>
-            <div class="nav-actions">
-                <button class="theme-toggle"><span class="theme-icon">☀️</span></button>
-                <button class="menu-toggle"><span></span><span></span><span></span></button>
-            </div>
         </div>
     </nav>
 
-    <main class="success-page" id="main-content">
-
-        <!-- État : vérification en cours -->
-        <div class="state-card" id="state-loading">
-            <div class="spinner"></div>
-            <div class="state-title">Vérification du paiement…</div>
-            <p class="state-msg" id="loading-msg">Nous confirmons votre transaction avec FedaPay.<br>Cela peut prendre quelques secondes.</p>
+    <main class="success-page">
+        <div id="state-loading" class="state-card active">
+            <div class="loader"></div>
+            <h2>Vérification du paiement...</h2>
+            <p id="loading-msg">Nous confirmons votre transaction auprès de FedaPay.</p>
         </div>
 
-        <!-- État : succès (billet) -->
-        <div class="ticket-wrap" id="state-success" style="display:none;">
-            <div class="ticket-card">
-                <div class="ticket-header">
-                    <div class="success-animation">✅</div>
-                    <h1>Paiement confirmé !</h1>
-                    <p>Votre billet a été émis avec succès</p>
-                </div>
-                <div class="ticket-tear"></div>
-                <div class="ticket-body">
-                    <h2 class="event-title" id="t-event-name">—</h2>
-                    <p class="event-meta" id="t-event-meta">—</p>
-                    <div class="ticket-info-grid">
-                        <div class="info-block">
-                            <div class="info-label">Titulaire</div>
-                            <div class="info-value" id="t-holder">—</div>
-                        </div>
-                        <div class="info-block">
-                            <div class="info-label">Type</div>
-                            <div class="info-value" id="t-type">Standard</div>
-                        </div>
-                        <div class="info-block">
-                            <div class="info-label">Montant</div>
-                            <div class="info-value" id="t-amount" style="color:#1C4DB8;">—</div>
-                        </div>
-                        <div class="info-block">
-                            <div class="info-label">Date</div>
-                            <div class="info-value" id="t-date">—</div>
-                        </div>
-                        <div class="info-block" style="grid-column:1/-1;">
-                            <div class="info-label">Numéro de billet</div>
-                            <div class="info-value mono" id="t-ticket-id">—</div>
-                        </div>
-                        <div class="info-block" style="grid-column:1/-1;">
-                            <div class="info-label">Transaction FedaPay</div>
-                            <div class="info-value mono" id="t-tx-id">—</div>
-                        </div>
-                    </div>
-                    <div class="qr-section">
-                        <p class="qr-label">📱 QR Code — Présentez à l'entrée</p>
-                        <canvas id="qr-canvas"></canvas>
-                        <p class="qr-sublabel" id="t-ticket-id-small">—</p>
-                    </div>
-                </div>
-                <div class="ticket-footer">
-                    <div class="email-badge" id="email-badge" style="display:none;">
-                        <span>📧</span>
-                        <span>Billet envoyé à <strong id="t-email">—</strong></span>
-                    </div>
-                    <div class="btn-group">
-                        <button class="btn-primary-solid" onclick="printTicket()">🖨️ Imprimer</button>
-                        <a href="dashboard.html" class="btn-outline">📁 Mes billets</a>
-                        <a href="events.html" class="btn-outline">🎟️ Autres événements</a>
-                    </div>
-                </div>
+        <div id="state-success" class="state-card">
+            <div class="icon-box icon-success">
+                <svg width="40" height="40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+            <h2 id="success-title">Paiement Réussi !</h2>
+            <p>Votre ticket a été généré et envoyé par email.</p>
+            
+            <div id="ticket-info" style="margin: 24px 0; padding: 20px; background: #f9fafb; border-radius: 12px; text-align: left;">
+                <p style="margin: 5px 0;"><strong>ID Transaction:</strong> <span id="display-txid">---</span></p>
+                <p style="margin: 5px 0;"><strong>Événement:</strong> <span id="display-event">---</span></p>
+            </div>
+
+            <canvas id="qrcode-canvas"></canvas>
+
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button onclick="window.print()" class="btn-primary" style="background: #10b981;">Imprimer le billet</button>
+                <a href="index.html" class="btn-primary">Retour à l'accueil</a>
             </div>
         </div>
 
-        <!-- État : erreur -->
-        <div class="state-card" id="state-error" style="display:none;">
-            <div class="state-icon">⚠️</div>
-            <div class="state-title" id="error-title">Vérification impossible</div>
-            <p class="state-msg" id="error-msg">Nous n'avons pas pu confirmer votre paiement. Si vous avez été débité, contactez notre support.</p>
-            <br>
-            <div class="btn-group" style="justify-content:center;flex-wrap:wrap;gap:10px;">
-                <button class="btn-primary-solid" style="min-width:160px;" onclick="retryVerification()">🔄 Réessayer</button>
-                <a href="index.html" class="btn-outline" style="min-width:140px;">🏠 Accueil</a>
+        <div id="state-error" class="state-card">
+            <div class="icon-box icon-error">
+                <svg width="40" height="40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
             </div>
-            <p style="margin-top:16px;font-size:12px;color:#9ca3af;">
-                Support : <a href="mailto:support@yourpass.bj" style="color:#4988C4;">support@yourpass.bj</a>
-            </p>
+            <h2 id="error-title">Oups !</h2>
+            <p id="error-msg">Nous n'avons pas pu confirmer votre paiement.</p>
+            <button onclick="location.reload()" class="btn-primary">Réessayer</button>
+            <a href="index.html" style="display: block; margin-top: 15px; color: #6b7280;">Annuler</a>
         </div>
-
     </main>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase-auth.js"></script>
-    <script src="js/profile.js"></script>
-
     <script>
-    /* ═══════════════════════════════════════════════════════════════
-       success.js — Logique de vérification et affichage du billet
-       ✅ CORRECTION : transactionId récupéré depuis URL OU localStorage
-    ═══════════════════════════════════════════════════════════════ */
-
     const params = new URLSearchParams(window.location.search);
+    const transactionId = params.get('id'); // FedaPay renvoie souvent l'ID
+    
+    // Récupérer les infos stockées temporairement dans le localStorage lors du clic sur "Payer"
+    const pendingData = JSON.parse(localStorage.getItem('yourpass_pending_order') || '{}');
 
-    // ✅ CORRECTION CRITIQUE : fallback sur localStorage si l'URL ne contient pas l'ID
-    // FedaPay ne transmet pas toujours ?id= dans la callback_url
-    const transactionId =
-        params.get('id') ||
-        params.get('transaction_id') ||
-        params.get('trx') ||
-        localStorage.getItem('yourpass_pending_tx') ||
-        (() => {
-            try {
-                return JSON.parse(localStorage.getItem('pendingPayment') || '{}').transaction_id || null;
-            } catch { return null; }
-        })();
-
-    console.log('[Success] transactionId résolu :', transactionId);
-
-    let retryCount   = 0;
-    const MAX_RETRIES  = 15;
-    const RETRY_DELAY  = 2000;
-
-    let eventData = {};
-    try { eventData = JSON.parse(localStorage.getItem('selectedEvent') || '{}'); } catch {}
-
-    let paymentData = {};
-    try { paymentData = JSON.parse(localStorage.getItem('pendingPayment') || '{}'); } catch {}
-
-    // ─── Fonctions UI ────────────────────────────────────────────
-    function showState(id) {
-        ['state-loading', 'state-success', 'state-error'].forEach(s => {
-            document.getElementById(s).style.display = s === id ? '' : 'none';
-        });
+    function showState(stateId) {
+        document.querySelectorAll('.state-card').forEach(el => el.classList.remove('active'));
+        document.getElementById(stateId).classList.add('active');
     }
 
-    function set(id, val) {
-        const el = document.getElementById(id);
-        if (el && val !== undefined) el.textContent = val;
-    }
-
-    // ─── Affichage du billet ─────────────────────────────────────
-    async function showTicket(txData) {
-        const ticketId = txData.ticketId || `YP-${Date.now()}`;
-        const price    = parseInt(eventData.price) || parseInt(paymentData.amount) || 0;
-        const qty      = parseInt(eventData.quantity) || 1;
-        const fees     = Math.round(price * qty * 0.05);
-        const total    = price * qty + fees;
-        const fmt      = n => n.toLocaleString('fr-FR') + ' XOF';
-
-        set('t-event-name', eventData.name || 'Votre événement');
-        set('t-event-meta',
-            [eventData.date ? new Date(eventData.date).toLocaleDateString('fr-FR', { day:'numeric', month:'long', year:'numeric' }) : null,
-             eventData.venue]
-            .filter(Boolean).join(' · ') || '—'
-        );
-        set('t-holder', paymentData.name || '—');
-        set('t-type',   eventData.ticketType === 'vip' ? 'VIP' : 'Standard');
-        set('t-amount', fmt(total));
-        set('t-date',   eventData.date ? new Date(eventData.date).toLocaleDateString('fr-FR') : '—');
-        set('t-ticket-id',       ticketId);
-        set('t-ticket-id-small', ticketId);
-        set('t-tx-id', transactionId || '—');
-
-        const email = paymentData.email || '';
-        if (email) {
-            document.getElementById('email-badge').style.display = 'flex';
-            set('t-email', email);
-        }
-
-        const qrPayload = JSON.stringify({
-            id: ticketId,
-            tx: transactionId,
-            event: eventData.name,
-            holder: paymentData.name,
-            type: eventData.ticketType || 'standard',
-        });
-
-        if (typeof QRCode !== 'undefined') {
-            const canvas = document.getElementById('qr-canvas');
-            QRCode.toCanvas(canvas, qrPayload, {
-                width: 160,
-                margin: 2,
-                color: { dark: '#1C4DB8', light: '#ffffff' },
-            });
-        }
-
-        showState('state-success');
-
-        if (email) sendTicketEmail({ ticketId, email, total });
-
-        // ✅ Nettoyer localStorage après succès
-        localStorage.removeItem('pendingPayment');
-        localStorage.removeItem('yourpass_pending_tx');
-    }
-
-    // ─── Envoi email billet ──────────────────────────────────────
-    async function sendTicketEmail({ ticketId, email, total }) {
-        try {
-            await fetch('/api/send-ticket', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    transactionId,
-                    ticketId,
-                    email,
-                    name:       paymentData.name,
-                    eventName:  eventData.name,
-                    eventDate:  eventData.date,
-                    eventVenue: eventData.venue,
-                    ticketType: eventData.ticketType || 'Standard',
-                    amount:     total,
-                }),
-            });
-        } catch (err) {
-            console.warn('[Success] Envoi email échoué (non bloquant):', err.message);
-        }
-    }
-
-    // ─── Vérification paiement ───────────────────────────────────
-    async function verifyPayment() {
+    async function verifyAndSend() {
         if (!transactionId) {
-            document.getElementById('error-title').textContent = 'Identifiant de transaction manquant';
-            document.getElementById('error-msg').textContent   =
-                'Aucun identifiant de transaction trouvé. Si vous avez payé, contactez le support avec votre numéro de téléphone.';
+            document.getElementById('error-msg').textContent = "Aucun identifiant de transaction trouvé.";
             showState('state-error');
             return;
         }
 
-        document.getElementById('loading-msg').textContent =
-            `Vérification de la transaction #${transactionId}…`;
-
         try {
-            const res  = await fetch(`/api/verify/${transactionId}`);
-            const data = await res.json();
+            // Dans un vrai flux, on pourrait appeler une API de vérification ici.
+            // Mais puisque ton Webhook gère déjà la DB, on va juste déclencher l'envoi du billet final.
+            
+            const response = await fetch('/api/send-ticket', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    transactionId: transactionId,
+                    email: pendingData.email,
+                    name: pendingData.name,
+                    eventName: pendingData.eventName || 'Événement YourPass',
+                    amount: pendingData.amount
+                })
+            });
 
-            if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+            const result = await response.json();
 
-            // ✅ CORRECTION : accepter tous les statuts de succès FedaPay
-            const status = (data.status || '').toLowerCase();
-            console.log('[Success] Statut reçu :', status);
+            if (response.ok) {
+                // Affichage des infos
+                document.getElementById('display-txid').textContent = transactionId;
+                document.getElementById('display-event').textContent = pendingData.eventName || 'Confirmé';
+                
+                // Génération du QR Code visuel sur la page
+                QRCode.toCanvas(document.getElementById('qrcode-canvas'), transactionId, {
+                    width: 200,
+                    margin: 2
+                });
 
-            if (status === 'approved' || status === 'paid' || status === 'successful' || status === 'completed') {
-                await showTicket(data);
-
-            } else if (status === 'pending' || status === 'processing' || status === 'new') {
-                retryCount++;
-                if (retryCount < MAX_RETRIES) {
-                    document.getElementById('loading-msg').textContent =
-                        `En attente de confirmation… (${retryCount}/${MAX_RETRIES})`;
-                    setTimeout(verifyPayment, RETRY_DELAY);
-                } else {
-                    document.getElementById('error-title').textContent = 'Paiement en attente';
-                    document.getElementById('error-msg').textContent =
-                        `La transaction #${transactionId} est toujours en cours. Vérifiez votre mobile et réessayez dans quelques minutes.`;
-                    showState('state-error');
-                }
-
-            } else if (status === 'declined' || status === 'cancelled' || status === 'failed' || status === 'error') {
-                document.getElementById('error-title').textContent = 'Paiement refusé';
-                document.getElementById('error-msg').textContent =
-                    `La transaction a été refusée ou annulée (statut : ${status}). Aucun débit n'a été effectué.`;
-                showState('state-error');
-
+                showState('state-success');
+                // Nettoyage du storage
+                localStorage.removeItem('yourpass_pending_order');
             } else {
-                retryCount++;
-                if (retryCount < MAX_RETRIES) {
-                    setTimeout(verifyPayment, RETRY_DELAY);
-                } else {
-                    showState('state-error');
-                }
+                throw new Error(result.error || "Erreur lors de la génération du billet");
             }
 
         } catch (err) {
-            console.error('[Verify] Erreur:', err.message);
-            retryCount++;
-            if (retryCount < MAX_RETRIES) {
-                document.getElementById('loading-msg').textContent =
-                    `Nouvelle tentative (${retryCount}/${MAX_RETRIES})…`;
-                setTimeout(verifyPayment, RETRY_DELAY * 1.5);
-            } else {
-                document.getElementById('error-msg').textContent =
-                    `Erreur réseau. Votre paiement a peut-être été traité. Contactez le support avec l'ID : ${transactionId}`;
-                showState('state-error');
-            }
+            console.error('Erreur:', err);
+            document.getElementById('error-msg').textContent = err.message;
+            showState('state-error');
         }
     }
 
-    function retryVerification() {
-        retryCount = 0;
-        showState('state-loading');
-        verifyPayment();
-    }
-
-    function printTicket() { window.print(); }
-
-    document.addEventListener('DOMContentLoaded', () => {
-        showState('state-loading');
-        verifyPayment();
-    });
+    document.addEventListener('DOMContentLoaded', verifyAndSend);
     </script>
-
 </body>
 </html>

@@ -1,162 +1,111 @@
-
 // api/send-ticket.js — YourPass
-// Appelé par success.html après confirmation du paiement
-// Génère et envoie le billet par email (avec QR code en base64)
+// Génère un QR Code et envoie le billet final par email via Resend
 
 import QRCode from 'qrcode';
+import { Resend } from 'resend';
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export default async function handler(req, res) {
+  // ── CORS ──────────────────────────────────────────────────────────────
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Méthode non autorisée' });
 
-  const { transactionId, email, name, eventName, eventDate, eventVenue, ticketType, amount } = req.body || {};
+  const { 
+    transactionId, 
+    email, 
+    name, 
+    eventName, 
+    eventDate, 
+    eventVenue, 
+    ticketType, 
+    amount 
+  } = req.body || {};
 
+  // Validation des champs obligatoires
   if (!transactionId || !email || !eventName) {
-    return res.status(400).json({ error: 'Champs requis manquants' });
+    return res.status(400).json({ error: 'Données de billet incomplètes' });
   }
 
-  // Générer un ID de billet unique
-  const ticketId = `YP-${Date.now()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
-
-  // Données encodées dans le QR
-  const qrData = JSON.stringify({
-    ticketId,
-    transactionId,
-    event: eventName,
-    date: eventDate,
-    type: ticketType || 'Standard',
-    holder: name,
-    issued: new Date().toISOString(),
-  });
-
-  let qrCodeDataUrl = '';
   try {
-    qrCodeDataUrl = await QRCode.toDataURL(qrData, {
-      width: 200,
-      margin: 2,
-      color: { dark: '#1C4DB8', light: '#ffffff' },
+    // 1. Génération d'un ID de billet unique
+    const ticketId = `YP-${Date.now()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+
+    // 2. Génération du QR Code (Base64)
+    // On encode les infos essentielles pour la vérification à l'entrée
+    const qrData = JSON.stringify({
+      t: ticketId,
+      tx: transactionId,
+      ev: eventName,
+      h: name || 'Client'
     });
-  } catch (err) {
-    console.error('[Ticket] Erreur QR Code:', err.message);
-    qrCodeDataUrl = '';
-  }
+    const qrCodeDataUrl = await QRCode.toDataURL(qrData);
 
-  const RESEND_API_KEY = process.env.RESEND_API_KEY;
+    // 3. Envoi de l'email via Resend
+    const { data, error } = await resend.emails.send({
+      from: 'YourPass <billetterie@yourpass.bj>',
+      to: email,
+      subject: `Votre Billet : ${eventName}`,
+      html: `
+        <div style="font-family: 'Inter', Helvetica, Arial, sans-serif; max-width: 500px; margin: auto; border: 1px solid #e5e7eb; border-radius: 16px; overflow: hidden; color: #1f2937;">
+          <div style="background: #2563eb; padding: 32px 24px; text-align: center; color: white;">
+            <h1 style="margin: 0; font-size: 24px; font-weight: 800;">YOURPASS</h1>
+            <p style="margin: 8px 0 0; opacity: 0.9; font-size: 14px;">Confirmation de réservation</p>
+          </div>
+          
+          <div style="padding: 24px;">
+            <p style="margin: 0 0 20px; font-size: 16px;">Bonjour <strong>${name || 'Client'}</strong>, voici votre billet pour <strong>${eventName}</strong>.</p>
+            
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
+              <tr>
+                <td style="padding: 10px 0; border-bottom: 1px solid #f3f4f6; color: #6b7280; font-size: 13px;">Date</td>
+                <td style="padding: 10px 0; border-bottom: 1px solid #f3f4f6; text-align: right; font-weight: 600;">${eventDate || 'À consulter'}</td>
+              </tr>
+              <tr>
+                <td style="padding: 10px 0; border-bottom: 1px solid #f3f4f6; color: #6b7280; font-size: 13px;">Lieu</td>
+                <td style="padding: 10px 0; border-bottom: 1px solid #f3f4f6; text-align: right; font-weight: 600;">${eventVenue || 'Cotonou, Bénin'}</td>
+              </tr>
+              <tr>
+                <td style="padding: 10px 0; border-bottom: 1px solid #f3f4f6; color: #6b7280; font-size: 13px;">Type</td>
+                <td style="padding: 10px 0; border-bottom: 1px solid #f3f4f6; text-align: right; font-weight: 600;">${ticketType || 'Standard'}</td>
+              </tr>
+              <tr>
+                <td style="padding: 10px 0; color: #6b7280; font-size: 13px;">Transaction</td>
+                <td style="padding: 10px 0; text-align: right; font-family: monospace; font-size: 12px;">${transactionId}</td>
+              </tr>
+            </table>
 
-  if (RESEND_API_KEY) {
-    try {
-      const emailHtml = buildTicketEmail({
-        ticketId, transactionId, name, eventName,
-        eventDate, eventVenue, ticketType, amount, qrCodeDataUrl,
-      });
+            <div style="text-align: center; background: #f9fafb; padding: 30px; border-radius: 12px; border: 2px dashed #e5e7eb;">
+              <p style="margin: 0 0 15px; font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Scanner à l'entrée</p>
+              <img src="${qrCodeDataUrl}" alt="QR Code Billet" style="width: 180px; height: 180px; display: block; margin: auto;">
+              <p style="margin: 15px 0 0; font-family: monospace; color: #9ca3af; font-size: 12px;">${ticketId}</p>
+            </div>
 
-      const response = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${RESEND_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          from: 'YourPass Billets <tickets@yourpass.bj>',
-          to: [email],
-          subject: `🎫 Votre billet — ${eventName}`,
-          html: emailHtml,
-        }),
-      });
+            <div style="margin-top: 24px; background: #eff6ff; padding: 15px; border-radius: 8px; font-size: 13px; color: #1e40af; line-height: 1.5;">
+              <strong>Note :</strong> Ce billet est unique. Présentez ce QR Code sur votre téléphone ou imprimez cet email pour accéder à l'événement.
+            </div>
+          </div>
 
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || 'Erreur Resend');
+          <div style="background: #f3f4f6; padding: 15px; text-align: center; font-size: 12px; color: #9ca3af;">
+            &copy; 2026 YourPass Bénin. Tous droits réservés.
+          </div>
+        </div>
+      `
+    });
 
-      return res.status(200).json({
-        success: true,
-        ticketId,
-        message: `Billet envoyé à ${email}`,
-      });
-    } catch (err) {
-      console.error('[Ticket] Erreur envoi email:', err.message);
+    if (error) {
+      console.error('[Resend Error]:', error);
+      return res.status(500).json({ error: "Erreur lors de l'envoi de l'email" });
     }
+
+    return res.status(200).json({ success: true, message: 'Billet envoyé !', ticketId });
+
+  } catch (err) {
+    console.error('[SendTicket Catch]:', err.message);
+    return res.status(500).json({ error: 'Erreur interne du serveur' });
   }
-
-  // Mode sandbox
-  console.log('[Ticket] Billet généré (sandbox):', { ticketId, transactionId, email, eventName });
-  return res.status(200).json({
-    success: true,
-    ticketId,
-    message: 'Billet généré (configurez RESEND_API_KEY pour l\'envoi réel)',
-    sandbox: true,
-  });
-}
-
-function buildTicketEmail({ ticketId, transactionId, name, eventName, eventDate, eventVenue, ticketType, amount, qrCodeDataUrl }) {
-  const formattedDate = eventDate
-    ? new Date(eventDate).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
-    : '—';
-
-  return `
-<!DOCTYPE html>
-<html lang="fr">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#f3f4f6;font-family:Inter,Arial,sans-serif;">
-  <div style="max-width:600px;margin:32px auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.1);">
-    <!-- Header -->
-    <div style="background:linear-gradient(135deg,#1C4DB8,#4988C4);padding:32px 24px;text-align:center;color:#fff;">
-      <div style="font-size:48px;margin-bottom:8px;">🎫</div>
-      <h1 style="margin:0;font-size:26px;font-weight:800;">Votre billet est prêt !</h1>
-      <p style="margin:8px 0 0;opacity:0.85;font-size:15px;">Merci pour votre achat sur YourPass</p>
-    </div>
-
-    <!-- Ticket Body -->
-    <div style="padding:32px 24px;">
-      <h2 style="margin:0 0 4px;font-size:20px;color:#111827;">${eventName}</h2>
-      <p style="margin:0 0 24px;color:#6b7280;font-size:14px;">${formattedDate}${eventVenue ? ' · ' + eventVenue : ''}</p>
-
-      <table style="width:100%;border-collapse:collapse;margin-bottom:24px;">
-        <tr style="background:#f9fafb;">
-          <td style="padding:10px 14px;font-size:13px;color:#6b7280;border-radius:6px 0 0 6px;">Titulaire</td>
-          <td style="padding:10px 14px;font-size:14px;font-weight:600;color:#111827;">${name || '—'}</td>
-        </tr>
-        <tr>
-          <td style="padding:10px 14px;font-size:13px;color:#6b7280;">Type de billet</td>
-          <td style="padding:10px 14px;font-size:14px;font-weight:600;color:#111827;">${ticketType || 'Standard'}</td>
-        </tr>
-        <tr style="background:#f9fafb;">
-          <td style="padding:10px 14px;font-size:13px;color:#6b7280;">Montant payé</td>
-          <td style="padding:10px 14px;font-size:14px;font-weight:600;color:#1C4DB8;">${amount ? Number(amount).toLocaleString('fr-FR') + ' XOF' : '—'}</td>
-        </tr>
-        <tr>
-          <td style="padding:10px 14px;font-size:13px;color:#6b7280;">N° de billet</td>
-          <td style="padding:10px 14px;font-size:13px;font-family:monospace;color:#374151;">${ticketId}</td>
-        </tr>
-        <tr style="background:#f9fafb;">
-          <td style="padding:10px 14px;font-size:13px;color:#6b7280;">Transaction</td>
-          <td style="padding:10px 14px;font-size:13px;font-family:monospace;color:#374151;">${transactionId}</td>
-        </tr>
-      </table>
-
-      <!-- QR Code -->
-      ${qrCodeDataUrl ? `
-      <div style="text-align:center;padding:24px;background:#f9fafb;border-radius:12px;margin-bottom:24px;">
-        <p style="margin:0 0 12px;font-size:13px;font-weight:600;color:#374151;">Présentez ce QR code à l'entrée</p>
-        <img src="${qrCodeDataUrl}" alt="QR Code billet" style="width:160px;height:160px;border-radius:8px;">
-        <p style="margin:12px 0 0;font-size:11px;color:#9ca3af;">Valable uniquement pour ${eventName}</p>
-      </div>
-      ` : ''}
-
-      <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:14px 16px;font-size:13px;color:#1d4ed8;">
-        💡 <strong>Important :</strong> Conservez ce billet et présentez ce QR code (ou votre numéro de billet) à l'entrée de l'événement.
-      </div>
-    </div>
-
-    <!-- Footer -->
-    <div style="padding:16px 24px;background:#f9fafb;text-align:center;border-top:1px solid #e5e7eb;">
-      <p style="margin:0;font-size:12px;color:#9ca3af;">© 2026 YourPass · La billetterie événementielle du Bénin</p>
-      <p style="margin:4px 0 0;font-size:11px;color:#d1d5db;">En cas de problème, contactez-nous : <a href="mailto:support@yourpass.bj" style="color:#4988C4;">support@yourpass.bj</a></p>
-    </div>
-  </div>
-</body>
-</html>
-  `;
 }
