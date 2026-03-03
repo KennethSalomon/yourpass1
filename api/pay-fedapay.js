@@ -1,25 +1,24 @@
-// api/pay-fedapay.js — YourPass
-// Crée une transaction FedaPay et retourne l'URL de paiement
+// api/pay-fedapay.js — YourPass ✅ CORRIGÉ
+// Corrections :
+//   ✅ callback_url sans ?id=Date.now() — FedaPay ajoute lui-même ?id=TX_ID
+//   ✅ Extraction robuste de l'ID de transaction
+//   ✅ Extraction robuste de l'URL de paiement
 
 export default async function handler(req, res) {
-  // ── CORS ──────────────────────────────────────────────────────────────
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Méthode non autorisée' });
+  if (req.method !== 'POST')   return res.status(405).json({ error: 'Méthode non autorisée' });
 
-  // ── Variables d'environnement ─────────────────────────────────────────
   const FEDAPAY_SECRET = process.env.FEDAPAY_SECRET_KEY;
-  // Correction de l'URL de base pour éviter le double slash
   const BASE_URL       = (process.env.CALLBACK_URL || 'https://yourpass.vercel.app').replace(/\/$/, '');
-  const FEDAPAY_ENV    = process.env.FEDAPAY_ENV  || 'sandbox'; // 'sandbox' ou 'live'
+  const FEDAPAY_ENV    = process.env.FEDAPAY_ENV || 'sandbox';
   const FEDAPAY_BASE   = FEDAPAY_ENV === 'live'
     ? 'https://api.fedapay.com/v1'
     : 'https://sandbox-api.fedapay.com/v1';
 
   if (!FEDAPAY_SECRET) {
-    console.error('[FedaPay] FEDAPAY_SECRET_KEY non défini');
     return res.status(500).json({ error: 'Configuration serveur incomplète' });
   }
 
@@ -30,29 +29,33 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Montant et email client requis' });
     }
 
-    // ── 1. Création de la transaction ───────────────────────────────────
     const txPayload = {
       amount:      parseInt(amount),
       currency:    { iso: 'XOF' },
-      description: `Ticket YourPass - Événement #${event_id || 'Global'}`,
+      description: `Ticket YourPass — Événement #${event_id || 'Global'}`,
       customer: {
         firstname: customer.firstname || 'Client',
         lastname:  customer.lastname  || 'YourPass',
         email:     customer.email,
       },
-      // Métadonnées cruciales pour le webhook
       custom_metadata: {
-        event_id:      event_id || 'n/a',
-        customer_name: `${customer.firstname || ''} ${customer.lastname || ''}`.trim(),
-        customer_email: customer.email
+        event_id:       String(event_id || 'n/a'),
+        customer_name:  `${customer.firstname || ''} ${customer.lastname || ''}`.trim(),
+        customer_email: customer.email,
       },
-      // URL de redirection après paiement avec ID unique pour éviter le cache
-      callback_url: `${BASE_URL}/success.html?id=${Date.now()}`
+      // ✅ BUG CORRIGÉ — plus de ?id=Date.now()
+      // FedaPay ajoute automatiquement ?id=TX_ID&status=approved à cette URL
+      callback_url: `${BASE_URL}/success.html`,
     };
 
-    console.log('[FedaPay] Création TX avec payload:', JSON.stringify(txPayload));
+    if (customer.phone_number) {
+      txPayload.customer.phone_number = {
+        number:  customer.phone_number.replace(/\D/g, '').replace(/^229/, ''),
+        country: 'BJ',
+      };
+    }
 
-    const response = await fetch(`${FEDAPAY_BASE}/transactions`, {
+    const txResponse = await fetch(`${FEDAPAY_BASE}/transactions`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${FEDAPAY_SECRET}`,
@@ -62,17 +65,20 @@ export default async function handler(req, res) {
       body: JSON.stringify(txPayload),
     });
 
-    const data = await response.json();
+    const txData = await txResponse.json();
 
-    if (!response.ok) {
-      console.error('[FedaPay] Erreur création:', JSON.stringify(data));
-      return res.status(response.status).json({ error: data.message || 'Erreur FedaPay' });
+    if (!txResponse.ok) {
+      return res.status(txResponse.status).json({
+        error: txData.message || txData.error || 'Erreur FedaPay création',
+      });
     }
 
-    const txId = data.v1?.transaction?.id || data.transaction?.id;
-    if (!txId) throw new Error('ID de transaction manquant dans la réponse');
+    // ✅ Extraction robuste — couvre les différentes structures de réponse FedaPay
+    const tx   = txData?.v1?.transaction ?? txData?.transaction ?? txData;
+    const txId = tx?.id;
+    if (!txId) throw new Error('ID de transaction manquant dans la réponse FedaPay');
 
-    // ── 2. Génération du token de paiement ───────────────────────────────
+    // Génération du token de paiement
     const tokenResponse = await fetch(`${FEDAPAY_BASE}/transactions/${txId}/token`, {
       method: 'POST',
       headers: {
@@ -84,34 +90,27 @@ export default async function handler(req, res) {
     const tokenData = await tokenResponse.json();
 
     if (!tokenResponse.ok) {
-      const errMsg = tokenData?.message || tokenData?.error || JSON.stringify(tokenData);
-      console.error('[FedaPay] Erreur génération token:', errMsg);
-      return res.status(tokenResponse.status).json({
-        error: `FedaPay token: ${errMsg}`,
-        transaction_id: txId,
-      });
+      const errMsg = tokenData?.message || tokenData?.error || `HTTP ${tokenResponse.status}`;
+      return res.status(tokenResponse.status).json({ error: `Token FedaPay : ${errMsg}`, transaction_id: txId });
     }
 
-    const token      = tokenData.token;
-    // Construction de l'URL finale
-    const paymentUrl = tokenData.url 
-      || (token ? `https://checkout${FEDAPAY_ENV === 'sandbox' ? '-sandbox' : ''}.fedapay.com/v1/checkout/${token}` : null);
+    // ✅ Extraction robuste de l'URL
+    const tokenStr = tokenData?.token ?? tokenData?.v1?.token?.token ?? null;
+    const paymentUrl = tokenData?.url
+                    ?? tokenData?.v1?.url
+                    ?? tokenData?.token?.url
+                    ?? (tokenStr
+                        ? `https://checkout${FEDAPAY_ENV !== 'live' ? '-sandbox' : ''}.fedapay.com/v1/checkout/${tokenStr}`
+                        : null);
 
     if (!paymentUrl) {
-      console.error('[FedaPay] URL de paiement introuvable');
       return res.status(500).json({ error: 'URL de paiement non générée', transaction_id: txId });
     }
 
-    console.log('[FedaPay] Succès! URL générée pour TX:', txId);
-
-    return res.status(200).json({
-      success:        true,
-      transaction_id: txId,
-      payment_url:    paymentUrl
-    });
+    return res.status(200).json({ success: true, transaction_id: txId, payment_url: paymentUrl });
 
   } catch (error) {
-    console.error('[FedaPay] Erreur Catch:', error.message);
-    return res.status(500).json({ error: 'Erreur interne du serveur' });
+    console.error('[FedaPay] Erreur interne:', error.message);
+    return res.status(500).json({ error: 'Erreur interne : ' + error.message });
   }
 }
